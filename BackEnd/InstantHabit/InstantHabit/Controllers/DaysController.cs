@@ -99,6 +99,75 @@ namespace InstantHabit.Controllers
                               }).FirstOrDefault();
             return linqResult;
 
+        }
+
+        [HttpGet]
+        [Route("GetBestStreak")]
+        public async Task<BestStreakResponse> GetBestStreak([FromQuery]  int habitId)
+        {
+            var daysList = _context.Days.ToList<Day>();
+
+            var linqResult = (from day in daysList
+                              where day.HabitId == habitId 
+                              select new Day
+                              {
+                                  Id = day.Id,
+                                  DayNumber = day.DayNumber,
+                                  Note = day.Note,
+                                  IsChecked = day.IsChecked,
+                                  HabitId = day.HabitId,
+
+                              }).ToList();
+
+            var numbers = new List<int>();
+
+            foreach(var day in linqResult)
+            {
+                numbers.Add(day.DayNumber);
+            }
+
+            numbers.Sort();
+
+            var bestStreak = 1;
+            var bestStreakList = new List<int>();
+
+            for(var i = 0; i < numbers.Count - 1; i++)
+            {
+                if(numbers[i+1] - numbers[i] == 1)
+                {
+                    bestStreak++;
+                    if(i+1 == numbers.Count - 1)
+                    {
+                        bestStreakList.Add(bestStreak);
+                    }
+                }
+                else
+                {
+                    bestStreakList.Add(bestStreak);
+                    bestStreak = 1;
+                }
+            }
+
+            var msg = "";
+
+           if (bestStreakList.Max() >= 3 && bestStreakList.Max() <= 5)
+            {
+                msg = "Well Done";
+            }else if (bestStreakList.Max() >= 6 && bestStreakList.Max() <= 8)
+            {
+                msg = "Great Job";
+            }
+
+            var result = new BestStreakResponse
+            {
+                BestStreak = bestStreakList.Max(),
+                MotivationalMessage = msg
+            };
+
+
+
+
+            return result;
 
         }
 
