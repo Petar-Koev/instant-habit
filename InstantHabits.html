@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href= "css/bootstrap.css">
+    <link rel="stylesheet" href= "css/site.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cabin+Sketch&display=swap" rel="stylesheet">
+    <title>Instant Habits</title>
+</head>
+<body>
+
+    <nav class="navbar navbar-expand-md bg-transperent navbar-dark ">
+        <a class="navbar-brand" href="#">
+            <img src="imgs/logo.ico" width="118" height="83"/>
+        </a>
+      
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#collapsibleNavbar">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+      
+        <div class="collapse navbar-collapse" id="collapsibleNavbar">
+          <ul class="navbar-nav">
+            <li class="nav-item">
+              <a class="nav-link" href="InstantHabits.html">Instant Habits</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="index.html">HowTo?</a>
+              </li>
+          </ul>
+        </div>
+      </nav>
+
+       <!-- Adding A Habit -->
+       <div id="div-main">
+          
+         <header class="container">
+            <h1 id="Main-title">Create a habit</h1>
+            <input type="text" id="new-habit-input" placeholder="Enter a name..."/>
+            <input type="submit" id="new-habit-submit" onclick="addHabit()" value="Add habit"/>
+         </header>
+
+       <div id="habits-area">
+
+       </div>
+   
+       <div id="habit-area">
+        <input type="hidden" id="opened-habit-id" value="">
+        <div id="habit">
+          <h2 id="habit-name-h2">Habit's Name:</h2>
+          <!--
+       <div id="checker">
+          <input type="text" id="day-input" placeholder="Choose a day..."/>
+              <input type="submit" id="day-check" value="Check"/>
+              <input type="submit" id="day-uncheck" value="Uncheck"/>
+       </div>
+       -->
+
+       <div id="habit-note">
+        <input type="text" id="description-input" 
+            placeholder="Add habit description..."/>
+        <input type="submit" id="description-submit"
+          onclick="addDescription()" value="Add description"/>
+        <p id="description-text" >This should be the place for HABIT description!!!
+        </p>
+        
+       </div> 
+  
+       <div class="box-ex container-fluid">
+    <div class="row">
+      <div class="col-md-12">
+        <button type="button" class="box col-md-3" id="day-1" data-checker="false" onclick="addDay(this.id)" value="1">1</button>
+        <button type="button" class="box col-md-3" id="day-2" data-checker="false" onclick="addDay(this.id)" value="2">2</button>
+        <button type="button" class="box col-md-3" 
+        id="day-3" data-checker="false" onclick="addDay(this.id)" value="3">3</button>
+        <button type="button" class="box col-md-3" 
+        id="day-4" data-checker="false" onclick="addDay(this.id)" value="4">4</button>
+        <button type="button" class="box col-md-3" 
+        id="day-5" data-checker="false" onclick="addDay(this.id)" value="5">5</button>
+        <button type="button" class="box col-md-3" 
+        id="day-6" data-checker="false" onclick="addDay(this.id)" value="6">6</button>
+      </div>
+    </div>
+     <div class="row">
+      <div class="col-md-12">
+         <button type="button" class="box col-md-3" 
+         id="day-7" data-checker="false" onclick="addDay(this.id)" value="7">7</button>
+        <button type="button" class="box col-md-3" 
+        id="day-8" data-checker="false" onclick="addDay(this.id)" value="8">8</button>
+        <button type="button" class="box col-md-3" 
+        id="day-9" data-checker="false" onclick="addDay(this.id)" value="9">9</button>
+        <button type="button" class="box col-md-3" 
+        id="day-10" data-checker="false" onclick="addDay(this.id)" value="10">10</button>
+        <button type="button" class="box col-md-3" 
+        id="day-11" data-checker="false" onclick="addDay(this.id)" value="11">11</button>
+        <button type="button" class="box col-md-3" 
+        id="day-12" data-checker="false" onclick="addDay(this.id)" value="12">12</button>
+      </div>
+    </div>
+     <div class="row">
+      <div class="col-md-12">
+        <button type="button" class="box col-md-3" 
+        id="day-13" data-checker="false" onclick="addDay(this.id)"value="13">13</button>
+        <button type="button" class="box col-md-3" 
+        id="day-14" data-checker="false" onclick="addDay(this.id)" value="14">14</button>
+        <button type="button" class="box col-md-3" 
+        id="day-15" data-checker="false" onclick="addDay(this.id)" value="15">15</button>
+        <button type="button" class="box col-md-3" 
+        id="day-16" data-checker="false" onclick="addDay(this.id)"value="16">16</button>
+        <button type="button" class="box col-md-3" 
+        id="day-17" data-checker="false" onclick="addDay(this.id)" value="17">17</button>
+        <button type="button" class="box col-md-3" 
+        id="day-18" data-checker="false" onclick="addDay(this.id)" value="18">18</button>
+      </div>
+    </div>
+     <div class="row">
+      <div class="col-md-12">
+        <button type="button" class="box col-md-3" 
+        id="day-19" data-checker="false" onclick="addDay(this.id)" value="19">19</button>
+        <button type="button" class="box col-md-3" 
+        id="day-20" data-checker="false" onclick="addDay(this.id)" value="20">20</button>
+        <button type="button" class="box col-md-3" 
+        id="day-21" data-checker="false" onclick="addDay(this.id)" value="21">21</button>
+        <button type="button" class="box col-md-3" 
+        id="day-22" data-checker="false" onclick="addDay(this.id)" value="22">22</button>
+        <button type="button" class="box col-md-3" 
+        id="day-23" data-checker="false" onclick="addDay(this.id)" value="23">23</button>
+        <button type="button" class="box col-md-3" 
+        id="day-24" data-checker="false" onclick="addDay(this.id)" value="24">24</button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+         <button type="button" class="box col-md-3" 
+         id="day-25" data-checker="false" onclick="addDay(this.id)" value="25">25</button>
+        <button type="button" class="box col-md-3" 
+        id="day-26" data-checker="false" onclick="addDay(this.id)" value="26">26</button>
+        <button type="button" class="box col-md-3" 
+        id="day-27" data-checker="false" onclick="addDay(this.id)" value="27">27</button>
+        <button type="button" class="box col-md-3" 
+        id="day-28" data-checker="false" onclick="addDay(this.id)" value="28">28</button>
+        <button type="button" class="box col-md-3" 
+        id="day-29" data-checker="false" onclick="addDay(this.id)" value="29">29</button>
+        <button type="button" class="box col-md-3" 
+        id="day-30" data-checker="false" onclick="addDay(this.id)" value="30">30</button>
+      </div>
+    </div>
+  </div>
+  
+  <div id="streak-info">
+  <p id="streak">Best streak: [???] </p>
+  <p id="streak"> Well done! </p>
+  </div>
+  
+  <div id="daily-notes" style="display: none;">
+    <input type="text" id="note-input" placeholder="Add a note for day(?)..."/>
+    <button id="note-submit" onclick="addDayDescription()">Add</button>
+    <p id="daily-note-text">This should be the place for daily
+    notes..it could get extremly long so I have to find a way 
+    to control it.
+    </p>
+ </div>
+
+ <div>
+  <button id="get-description-btn" onclick="displayDayDescription()"> Show description
+  </button>
+    <p id="daily-description-text">This should be the place for daily notes..
+ </div>
+  
+  <button id="extend-btn"> 
+  Extend/Reset
+  </button>
+  </div>
+
+       </div>
+
+       
+      </div>
+    
+
+   <script src="main.js"></script>
+   <script src="jquery-3.6.0.min.js"></script>
+   <script src="js/bootstrap.js"></script>
+</body>
+</html>

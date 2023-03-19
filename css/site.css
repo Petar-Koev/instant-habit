@@ -1,0 +1,96 @@
+body {
+    background-color: black;
+    font-family: 'Cabin Sketch', cursive;
+    color: rgb(224, 12, 15);
+}
+
+.navbar {
+    margin-left: 10px;
+}
+
+header{
+    text-align: center;
+    margin-top: 10px;
+}
+
+#div-main {
+    width: 70%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#habits-area {
+    width: 50%;
+    float: left;
+    margin-top: 20px;
+    text-align: left;
+}
+
+#habit-area {
+    width: 50%;
+    float: left;
+    margin-top: 20px;
+    text-align: right;
+    display: none;
+}
+
+#daily-notes{
+    margin-top: 10px;
+}
+
+.box-ex{
+    background-color: lavenderblush;
+    margin-top: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+    width: 350px;
+    
+}
+  
+  .box{
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    margin: 3px 1px; 
+    display: inline-block;
+    background-color: steelblue;   
+    color: white;
+    text-align: center;
+    cursor: pointer;
+    
+  }
+  .box span{
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .box-cols{
+    margin: 0 auto !important;
+  }
+
+  #streak-info{
+    margin-top: 10px;
+
+  }
+
+  #streak{
+    display: inline;
+    margin-left: 15px;
+  }
+
+  #daily-note-text{
+    background-color: steelblue;
+    color: white;
+    margin-top: 10px;
+    padding: 3px;
+  }
+
+  #extend-btn{
+    margin-bottom: 10px;
+  }
+
+  #description-text{
+    margin-top: 10px;
+    background-color: steelblue;
+    color: white;
+    padding: 3px;
+  }
