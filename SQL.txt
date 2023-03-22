@@ -69,11 +69,67 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
--- Create New List Stored Procedure
-CREATE OR ALTER PROCEDURE [Packd].[CreateNewList_StoredProcedure]
+-- Create New Habit Stored Procedure
+CREATE OR ALTER PROCEDURE [InstantHabit].[CreateNewHabit_StoredProcedure]
 @Name varchar(500)
 AS
 BEGIN
-	INSERT INTO Packd.Lists (Name, CreationDate) VALUES (@Name, GETDATE())
+	INSERT INTO InstantHabit.Habits (Name, CreationDate, Description) VALUES (@Name, GETDATE(), NULL)
+END
+GO
+
+--Deletes Habit From Day Table
+CREATE OR ALTER PROCEDURE [InstantHabit].[DeleteAhabit_StoredProcedure]
+@Id int
+AS
+BEGIN
+    DELETE FROM InstantHabit.Habits
+	WHERE Id = @Id 
+END
+GO
+
+--Add/Update Habit Description Stored Procedure
+CREATE OR ALTER PROCEDURE [InstantHabit].[AddDescription_StoredProcedure]
+@Id int,
+@Description varchar(500)
+AS
+BEGIN
+    UPDATE InstantHabit.Habits
+	SET Description = @Description
+	WHERE Id = @Id
+END
+GO
+
+--Add New Day Stored Procedure
+CREATE OR ALTER PROCEDURE [InstantHabit].[AddNewDay_StoredProcedure]
+@habitId int,
+@dayNumber int
+AS
+BEGIN
+    INSERT INTO InstantHabit.Days (HabitId, DayNumber, Note, IsChecked) VALUES (@habitId, @dayNumber, NULL,1)
+END
+GO
+
+--Deletes Day From Day Table
+CREATE OR ALTER PROCEDURE [InstantHabit].[DeleteDay_StoredProcedure]
+@habitId int,
+@dayNumber int
+AS
+BEGIN
+    DELETE FROM InstantHabit.Days
+	WHERE HabitId = @habitId AND DayNumber = @dayNumber
+END
+GO
+
+--Add/Update Day Description Stored Procedure
+CREATE OR ALTER PROCEDURE [InstantHabit].[AddDayDescription_StoredProcedure]
+@habitId int,
+@dayNumber int,
+@Description varchar(500)
+AS
+BEGIN
+    UPDATE InstantHabit.Days
+	SET Note = @Description
+	WHERE HabitId = @habitId AND DayNumber = @dayNumber
 END
 GO

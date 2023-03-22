@@ -89,14 +89,17 @@ async function openHabit(value){
     let id = nameAndIdArray[1];
 
     document.getElementById("opened-habit-id").value = id;
-
     document.getElementById("habit-name-h2").innerHTML = name;
     
     alert(value);
     let habitArea = document.getElementById("habit-area");
+
     habitArea.style.display = "block";
+    document.getElementById("daily-description-text").style.display = "none";
+
     await getDescription();
     await displayDays();
+    await getStreak();
 
 }
 
@@ -117,7 +120,6 @@ async function DeleteHabit(e){
         if(allHabits[i].id == e.target.value){
           await deleteSQLHabit(e);
           habitArea.style.display = "none";
-          
         }
     }
 }
@@ -128,7 +130,7 @@ async function DeleteHabit(e){
     for(let i = 0; i < openBtns.length; i++){
         openBtns[i].addEventListener("click", async function(e){
         await clearDays();
-           await openHabit(openBtns[i].value);
+        await openHabit(openBtns[i].value);
 
         });
     }
@@ -172,7 +174,6 @@ async function deleteSQLHabit(e){
 async function addDescription() {
 
     let newDescription = document.getElementById("description-input").value;
-
     let id = document.getElementById("opened-habit-id").value;
 
     let result = await fetch(`https://localhost:7181/Habits/AddDescription?id=${id}&description=${newDescription}`, {
@@ -208,7 +209,6 @@ async function getHabitById(){
         }
     });
     const result = await response.json();
-    console.log(result);
     return result;
 }
 
@@ -221,8 +221,6 @@ async function getDescription(){
         console.log("Error!");
         console.log(e);
     }
-
-    console.log(selectedHabit.description);
 
     document.getElementById("description-text").innerHTML = selectedHabit.description;
 
@@ -255,8 +253,6 @@ async function getDescription(){
         console.log(e);
     }
 
-    console.log(days);
-
     for (let i = 0; i < days.length; i++){
         let probe = document.getElementById(`day-${days[i].dayNumber}`);
         probe.style.color = "red";
@@ -274,8 +270,6 @@ async function getDescription(){
         console.log(e);
     }
 
-    console.log(days);
-
     for (let i = 0; i < days.length; i++){
         let probe = document.getElementById(`day-${days[i].dayNumber}`);
         probe.style.color = "white";
@@ -286,17 +280,20 @@ async function getDescription(){
 
     let habitId = document.getElementById("opened-habit-id").value;
     let selectedBtn = document.getElementById(id);
+
     let nameAndIdArray = id.split("-");
     let dayId = nameAndIdArray[1];
 
-    if (selectedBtn.dataset.checker == "true"){
+       if (selectedBtn.dataset.checker == "true"){
         await deleteDay(habitId,dayId);
         selectedBtn.dataset.checker = false;
-        alert("Day DELETED",selectedBtn.dataset.checker);
+        alert("Day DELETED");
         selectedBtn.style.color = "white";
+        await getStreak();
+        document.getElementById("daily-description-text").style.display = "none";
 
-    }
-    else if (selectedBtn.dataset.checker == "false") {
+       }
+       else if (selectedBtn.dataset.checker == "false") {
         let result = await fetch(`https://localhost:7181/Days/AddDay?habitId=${habitId}&dayNumber=${dayId}`, {
         method: "POST",
         mode: 'cors',
@@ -306,20 +303,18 @@ async function getDescription(){
         },
         });
 
-       console.log(result);
-
-       if(result.status == 201){
-        selectedBtn.dataset.checker = true;
-        alert("Day ADDED",selectedBtn.dataset.checker);
-        await displayDays();
-        dayDescriptionAlert();
-       }
-       else {
+          if(result.status == 201){
+           selectedBtn.dataset.checker = true;
+           alert("Day ADDED");
+           await displayDays();
+           await getStreak();
+           document.getElementById("daily-description-text").style.display = "none";
+           dayDescriptionAlert();
+          }
+          else {
         console.log(result.status);
+          }
        }
-
-    }
-
     }
 
 
@@ -346,9 +341,8 @@ async function getDescription(){
  async function addDayDescription(){
 
     let dayNumber = prompt("Enter the number of your selected day:", "0->30");
+
     parseInt(dayNumber);
-    console.log(dayNumber);
-    
 
     let dayDescription = document.getElementById("note-input").value;
     let habitId = document.getElementById("opened-habit-id").value;
@@ -364,35 +358,33 @@ async function getDescription(){
 
     if(result.status == 201){
         document.getElementById("note-input").value = "";
-        document.getElementById("daily-note-text").innerHTML = dayDescription;
+        alert(`Description for day ${dayNumber} UPDATED.`)
+        document.getElementById("daily-notes").style.display = "none";
     }
     else {
         console.log(result.status);
     }
-
  }
 
  
  function dayDescriptionAlert(){
+
     let confirmAction = confirm("Do you want to add a description");
     let dailyNotes = document.getElementById("daily-notes");
     
-
     if(confirmAction){
         dailyNotes.style.display = "block";
     }
  }
  
 
- 
  async function displayDayDescription(){
 
-    let dayNumber = prompt("Enter a day", "0->30");
-    parseInt(dayNumber);
-    console.log(dayNumber);
-
     let habitId = document.getElementById("opened-habit-id").value;
+    let dayNumber = prompt("Enter a day", "0->30");
 
+    parseInt(dayNumber);
+    
     const response =  await fetch(`https://localhost:7181/Days/GetDayByNumber?dayNumber=${dayNumber}&habitId=${habitId}`, {
         method: "GET",
         mode: 'cors',
@@ -402,17 +394,49 @@ async function getDescription(){
         }
     });
     const result = await response.json();
-    console.log(result.note);
 
     document.getElementById("daily-description-text").innerHTML = result.note;
-
-   // return result;
+    document.getElementById("daily-description-text").style.display = "block";
         
-        
-    
 }
 
+async function getStreak(){
+
+    let habitId = document.getElementById("opened-habit-id").value;
+
+    const response =  await fetch(`https://localhost:7181/Days/GetBestStreak?habitId=${habitId}`, {
+        method: "GET",
+        mode: 'cors',
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        }
+    });
+    const result = await response.json();
     
+    console.log(result);
+    console.log(result.bestStreak);
+    console.log(result.motivationalMessage);
 
+    document.getElementById("streak-number").innerHTML = `Your best streak: ${result.bestStreak} day/s`;
+    document.getElementById("streak-msg").innerHTML = result.motivationalMessage;
 
+}
 
+/*
+async function displayStreak(){
+
+    let streak;
+
+    try {
+        streak = await getStreak();
+    } catch (e) {
+        console.log("Error!");
+        console.log(e);
+    }
+
+    console.log(streak);
+    console.log(streak.bestStreak);
+    console.log(streak.motivationalMessage);
+}
+*/

@@ -131,31 +131,48 @@ namespace InstantHabit.Controllers
             var bestStreak = 1;
             var bestStreakList = new List<int>();
 
-            for(var i = 0; i < numbers.Count - 1; i++)
+            if(numbers.Count <= 1)
             {
-                if(numbers[i+1] - numbers[i] == 1)
+                bestStreak = numbers.Count;
+                bestStreakList.Add(bestStreak);
+            } else
+            {
+                for (var i = 0; i < numbers.Count - 1; i++)
                 {
-                    bestStreak++;
-                    if(i+1 == numbers.Count - 1)
+                    if (numbers[i + 1] - numbers[i] == 1)
+                    {
+                        bestStreak++;
+                        if (i + 1 == numbers.Count - 1)
+                        {
+                            bestStreakList.Add(bestStreak);
+                        }
+                    }
+                    else
                     {
                         bestStreakList.Add(bestStreak);
+                        bestStreak = 1;
                     }
-                }
-                else
-                {
-                    bestStreakList.Add(bestStreak);
-                    bestStreak = 1;
                 }
             }
 
             var msg = "";
 
-           if (bestStreakList.Max() >= 3 && bestStreakList.Max() <= 5)
+           if (bestStreakList.Max() >= 3 && bestStreakList.Max() <= 8)
             {
                 msg = "Well Done";
-            }else if (bestStreakList.Max() >= 6 && bestStreakList.Max() <= 8)
+            }else if (bestStreakList.Max() >= 9 && bestStreakList.Max() <= 14)
             {
                 msg = "Great Job";
+            }else if (bestStreakList.Max() >= 15 && bestStreakList.Max() <= 24)
+            {
+                msg = "You're on FIRE!";
+            }
+            else if (bestStreakList.Max() >= 25 && bestStreakList.Max() <= 30)
+            {
+                msg = "Congratulations!!!";
+            }else
+            {
+                msg = "Keep on going";
             }
 
             var result = new BestStreakResponse
@@ -164,12 +181,8 @@ namespace InstantHabit.Controllers
                 MotivationalMessage = msg
             };
 
-
-
-
             return result;
 
         }
-
     }
 }
