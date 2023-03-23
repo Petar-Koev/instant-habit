@@ -100,6 +100,12 @@ async function openHabit(value){
     await getDescription();
     await displayDays();
     await getStreak();
+    
+    if (document.getElementById("bonus-box").dataset.target == id){
+        document.getElementById("bonus-box").style.display = "block";
+    }else {
+        document.getElementById("bonus-box").style.display = "none";
+    }
 
 }
 
@@ -310,6 +316,10 @@ async function getDescription(){
            await getStreak();
            document.getElementById("daily-description-text").style.display = "none";
            dayDescriptionAlert();
+              if(document.getElementById("bonus-box").style.display == "none"){
+                await resetChecker(id);
+              }
+           
           }
           else {
         console.log(result.status);
@@ -335,12 +345,11 @@ async function getDescription(){
     else {
         console.log(result.status);
     }
-
  }
 
  async function addDayDescription(){
 
-    let dayNumber = prompt("Enter the number of your selected day:", "0->30");
+    let dayNumber = prompt("Enter the number of your selected day:", "0->30/60");
 
     parseInt(dayNumber);
 
@@ -381,7 +390,7 @@ async function getDescription(){
  async function displayDayDescription(){
 
     let habitId = document.getElementById("opened-habit-id").value;
-    let dayNumber = prompt("Enter a day", "0->30");
+    let dayNumber = prompt("Enter a day", "0->30/60");
 
     parseInt(dayNumber);
     
@@ -394,10 +403,15 @@ async function getDescription(){
         }
     });
     const result = await response.json();
+    
+    console.log(result.note);
 
-    document.getElementById("daily-description-text").innerHTML = result.note;
-    document.getElementById("daily-description-text").style.display = "block";
-        
+    if(result.note == null){
+        alert("No description found.")
+    } else {
+        document.getElementById("daily-description-text").innerHTML = result.note;
+        document.getElementById("daily-description-text").style.display = "block";
+    }
 }
 
 async function getStreak(){
@@ -413,10 +427,6 @@ async function getStreak(){
         }
     });
     const result = await response.json();
-    
-    console.log(result);
-    console.log(result.bestStreak);
-    console.log(result.motivationalMessage);
 
     document.getElementById("streak-number").innerHTML = `Your best streak: ${result.bestStreak} day/s`;
     document.getElementById("streak-msg").innerHTML = result.motivationalMessage;
@@ -440,3 +450,69 @@ async function displayStreak(){
     console.log(streak.motivationalMessage);
 }
 */
+
+async function resetChecker(dayNumber){
+
+    let habitId = document.getElementById("opened-habit-id").value;
+    let nameAndIdArray = dayNumber.split("-");
+    let dayId = nameAndIdArray[1];
+    
+    const response =  await fetch(`https://localhost:7181/Days/ResetChecker?dayNumber=${dayId}&habitId=${habitId}`, {
+        method: "GET",
+        mode: 'cors',
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        }
+    });
+    const result = await response.text();
+    
+    console.log(result);
+
+    if(result == "You failed."){
+        alert("You failed to achieve your goal. Your progress will be deleted, but you can always start over.");
+        await deleteHabitDays();
+        refreshDays();
+
+    } else if(result == "You succeeded."){
+        alert("You've achieved your goal. You can extend your habit tracking with 30 bonus days or leave your progress as it is.");
+        let confirmAction = confirm("Do you want to add 30 bonus days?"); 
+
+           if(confirmAction){
+             document.getElementById("bonus-box").style.display = "block";
+             document.getElementById("bonus-box").dataset.checker = true;
+             document.getElementById("bonus-box").dataset.target = habitId;
+           }
+    }
+}
+
+async function deleteHabitDays(){
+
+    let habitId = document.getElementById("opened-habit-id").value;
+
+    let result = await fetch(`https://localhost:7181/Days/DeleteHabitDays?habitId=${habitId}`, {
+        method: "DELETE",
+        mode: 'cors',
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        },
+    });
+
+    if(result.status == 201){
+       // await clearDays();
+        await displayDays();
+    }
+    else {
+        console.log(result.status);
+    }
+
+}
+
+function refreshDays(){
+
+    for(let i = 1; i <= 30; i++ ){
+       let refresh =  document.getElementById(`day-${i}`);
+       refresh.style.color = "white";
+    }
+}

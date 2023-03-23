@@ -133,3 +133,13 @@ BEGIN
 	WHERE HabitId = @habitId AND DayNumber = @dayNumber
 END
 GO
+
+--Deletes Selected Habit - Days From Day Table
+CREATE OR ALTER PROCEDURE [InstantHabit].[DeleteDays_StoredProcedure]
+@habitId int	
+AS
+BEGIN
+    DELETE FROM InstantHabit.Days
+	WHERE HabitId = @habitId 
+END
+GO

@@ -170,7 +170,16 @@ namespace InstantHabit.Controllers
             else if (bestStreakList.Max() >= 25 && bestStreakList.Max() <= 30)
             {
                 msg = "Congratulations!!!";
-            }else
+            }
+            else if (bestStreakList.Max() >= 31 && bestStreakList.Max() <= 41)
+            {
+                msg = "Hard Work pays off";
+            }
+            else if (bestStreakList.Max() >= 42 && bestStreakList.Max() <= 60)
+            {
+                msg = "TOP NOTCH DEVELOPMENT!";
+            }
+            else
             {
                 msg = "Keep on going";
             }
@@ -184,5 +193,48 @@ namespace InstantHabit.Controllers
             return result;
 
         }
+
+        
+        [HttpGet]
+        [Route("ResetChecker")]
+        public async Task<string> ResetChecker([FromQuery] int dayNumber, int habitId)
+        {
+            var daysList = _context.Days.ToList<Day>();
+            string msg = "";
+
+            var result = (from day in daysList
+                          where day.HabitId == habitId
+                          select day).ToList();
+
+            if ((dayNumber >= 25 && dayNumber <= 30) && result.Count < 20)
+            {
+                msg = "You failed.";
+
+            } else if ((dayNumber >= 25 && dayNumber <= 30) && result.Count >= 20)
+            {
+                msg = "You succeeded.";
+            }
+
+            return msg;
+
+        }
+
+        [HttpDelete]
+        [Route("DeleteHabitDays")]
+        [ProducesResponseType(201)]
+        public async Task<StatusCodeResult> DeleteHabitDays([FromQuery] int habitId)
+        {
+            try
+            {
+                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.DeleteDays_StoredProcedure {0}", habitId);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(409);
+            }
+            return StatusCode(201);
+        }
+
+
     }
 }
