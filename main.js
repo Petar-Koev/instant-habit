@@ -48,7 +48,7 @@ async function displayHabits(){
     
     let habitsStructure = `
     <div id="habits">
-        <h2 id="habits-name-h2">Active habits:</h2>
+        <h2 id="habits-name-h2">Habits:</h2>
           <div id="all-habits">`;
 
     for(let i = 0; i <allHabits.length; i++){
@@ -100,11 +100,45 @@ async function openHabit(value){
     await getDescription();
     await displayDays();
     await getStreak();
-    
-    if (document.getElementById("bonus-box").dataset.target == id){
+
+    let gridChecker = localStorage.getItem("grid");
+    let parsedGridChecker = JSON.parse(gridChecker);
+
+    console.log(parsedGridChecker);
+
+    if (parsedGridChecker.includes(id)){
         document.getElementById("bonus-box").style.display = "block";
     }else {
         document.getElementById("bonus-box").style.display = "none";
+    }
+
+    
+    
+    /*
+    if (document.getElementById(value).dataset.target == true){
+        document.getElementById("bonus-box").style.display = "block";
+    }else {
+        document.getElementById("bonus-box").style.display = "none";
+    }
+    */
+
+}
+
+function deleteFromLS(id){
+    let targetedId = id.target.value;
+    console.log(targetedId);
+    let ls = localStorage.getItem("grid");
+    let parsedLS = JSON.parse(ls);
+
+    console.log(parsedLS);
+
+    if(parsedLS.includes(targetedId)){
+       let index =  parsedLS.indexOf(targetedId);
+       let newGrid = parsedLS.splice(index);
+       console.log(newGrid);
+       console.log(parsedLS);
+       localStorage.setItem("grid", JSON.stringify(parsedLS));
+
     }
 
 }
@@ -125,6 +159,7 @@ async function DeleteHabit(e){
     for(let i = 0; i < allHabits.length; i++){
         if(allHabits[i].id == e.target.value){
           await deleteSQLHabit(e);
+          deleteFromLS(e);
           habitArea.style.display = "none";
         }
     }
@@ -282,6 +317,7 @@ async function getDescription(){
     }
  }
 
+
  async function addDay(id){
 
     let habitId = document.getElementById("opened-habit-id").value;
@@ -290,6 +326,76 @@ async function getDescription(){
     let nameAndIdArray = id.split("-");
     let dayId = nameAndIdArray[1];
 
+
+    let days = [];
+
+    try {
+         days = await getAllHabitDays();
+    } catch (e) {
+        console.log("Error!");
+        console.log(e);
+    }
+
+
+
+    let checker = "";
+
+    if(days.length == 0){
+        checker = "No match";
+    } else {
+
+    for (let i = 0; i < days.length; i++){
+
+        if(days[i].dayNumber != dayId){
+            checker = "No match";
+        } else if(days[i].dayNumber == dayId) {
+            checker = "Match";
+            break;
+        }
+    }
+}
+
+    console.log(checker);
+
+    if (checker == "Match"){
+        await deleteDay(habitId,dayId);
+        alert("Day DELETED");
+        selectedBtn.style.color = "white";
+        await getStreak();
+        document.getElementById("daily-description-text").style.display = "none";
+
+       }
+       else if (checker == "No match") {
+        let result = await fetch(`https://localhost:7181/Days/AddDay?habitId=${habitId}&dayNumber=${dayId}`, {
+        method: "POST",
+        mode: 'cors',
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        },
+        });
+
+          if(result.status == 201){
+           alert("Day ADDED");
+           await displayDays();
+           await getStreak();
+           document.getElementById("daily-description-text").style.display = "none";
+           dayDescriptionAlert();
+              if(document.getElementById("bonus-box").style.display == "none"){
+                await resetChecker(id);
+              }
+           
+          }
+          else {
+        console.log(result.status);
+          }
+       }
+
+    
+
+
+
+/*
        if (selectedBtn.dataset.checker == "true"){
         await deleteDay(habitId,dayId);
         selectedBtn.dataset.checker = false;
@@ -325,6 +431,7 @@ async function getDescription(){
         console.log(result.status);
           }
        }
+       */
     }
 
 
@@ -373,6 +480,8 @@ async function getDescription(){
     else {
         console.log(result.status);
     }
+
+    
  }
 
  
@@ -451,11 +560,20 @@ async function displayStreak(){
 }
 */
 
+let itemsFromLS = localStorage.getItem("grid");
+let parsedResult = JSON.parse(itemsFromLS);
+let grids = parsedResult || [];
+let bonusGrid;
+
 async function resetChecker(dayNumber){
 
     let habitId = document.getElementById("opened-habit-id").value;
     let nameAndIdArray = dayNumber.split("-");
     let dayId = nameAndIdArray[1];
+
+    
+   
+    
     
     const response =  await fetch(`https://localhost:7181/Days/ResetChecker?dayNumber=${dayId}&habitId=${habitId}`, {
         method: "GET",
@@ -480,8 +598,15 @@ async function resetChecker(dayNumber){
 
            if(confirmAction){
              document.getElementById("bonus-box").style.display = "block";
-             document.getElementById("bonus-box").dataset.checker = true;
-             document.getElementById("bonus-box").dataset.target = habitId;
+
+             
+             bonusGrid = habitId
+
+             grids.push(bonusGrid);
+             localStorage.setItem("grid", JSON.stringify(grids));
+            
+
+            
            }
     }
 }
