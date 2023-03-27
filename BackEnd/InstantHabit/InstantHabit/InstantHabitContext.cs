@@ -45,6 +45,9 @@ namespace InstantHabit
                 entity.Property(e => e.Description)
                 .IsRequired(false)
                     .HasMaxLength(500);
+
+                entity.Property(e => e.IsExtended)
+               .IsRequired();
             });
 
             modelBuilder.Entity<Day>(entity =>

@@ -27,7 +27,8 @@ CREATE TABLE [InstantHabit].[Habits] (
     [Id] int identity(1,1) NOT NULL,
 	[Name] nvarchar(500) NOT NULL,
 	[CreationDate] datetime NOT NULL DEFAULT GETDATE(),
-	[Description] nvarchar(500) NULL
+	[Description] nvarchar(500) NULL,
+	[IsExtended] bit NOT NULL Default 0
 
 	CONSTRAINT [PK_Habits] PRIMARY KEY ([Id])
 );
@@ -141,5 +142,17 @@ AS
 BEGIN
     DELETE FROM InstantHabit.Days
 	WHERE HabitId = @habitId 
+END
+GO
+
+--Add/Update Habit isExtended Stored Procedure
+CREATE OR ALTER PROCEDURE [InstantHabit].[SetIsExtended_StoredProcedure]
+@habitId int
+
+AS
+BEGIN
+    UPDATE InstantHabit.Habits
+	SET IsExtended = 1
+	WHERE Id = @habitId
 END
 GO

@@ -98,50 +98,14 @@ async function openHabit(value){
     document.getElementById("daily-description-text").style.display = "none";
 
     await getDescription();
+    await handelIsExtended();
     await displayDays();
     await getStreak();
 
-    let gridChecker = localStorage.getItem("grid");
-    let parsedGridChecker = JSON.parse(gridChecker);
-
-    console.log(parsedGridChecker);
-
-    if (parsedGridChecker.includes(id)){
-        document.getElementById("bonus-box").style.display = "block";
-    }else {
-        document.getElementById("bonus-box").style.display = "none";
-    }
-
-    
-    
-    /*
-    if (document.getElementById(value).dataset.target == true){
-        document.getElementById("bonus-box").style.display = "block";
-    }else {
-        document.getElementById("bonus-box").style.display = "none";
-    }
-    */
 
 }
 
-function deleteFromLS(id){
-    let targetedId = id.target.value;
-    console.log(targetedId);
-    let ls = localStorage.getItem("grid");
-    let parsedLS = JSON.parse(ls);
 
-    console.log(parsedLS);
-
-    if(parsedLS.includes(targetedId)){
-       let index =  parsedLS.indexOf(targetedId);
-       let newGrid = parsedLS.splice(index);
-       console.log(newGrid);
-       console.log(parsedLS);
-       localStorage.setItem("grid", JSON.stringify(parsedLS));
-
-    }
-
-}
 
 async function DeleteHabit(e){
     e = e || window.event;
@@ -170,7 +134,7 @@ async function DeleteHabit(e){
 
     for(let i = 0; i < openBtns.length; i++){
         openBtns[i].addEventListener("click", async function(e){
-        await clearDays();
+        await displayDays();
         await openHabit(openBtns[i].value);
 
         });
@@ -217,21 +181,26 @@ async function addDescription() {
     let newDescription = document.getElementById("description-input").value;
     let id = document.getElementById("opened-habit-id").value;
 
-    let result = await fetch(`https://localhost:7181/Habits/AddDescription?id=${id}&description=${newDescription}`, {
+    let request = {
+        habitId: id,
+        description: newDescription
+    };
+
+    let result = await fetch(`https://localhost:7181/Habits/AddDescription`, {
         method: "PUT",
         mode: 'cors',
         headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
         },
+        body: JSON.stringify(request),
     });
+    
 
-    if(result.status == 201){
+        let parsedResponse = await result.json(); 
+        console.log("Parsed : ", parsedResponse);
+
         await displayHabits();
-    }
-    else {
-        console.log(result.status);
-    }
 
     document.getElementById("description-input").value = "";
     await getDescription();
@@ -284,7 +253,7 @@ async function getDescription(){
 
  }
 
- async function displayDays(){
+ async function displayDays(shouldClear = false){
     let days = [];
 
     try {
@@ -296,27 +265,10 @@ async function getDescription(){
 
     for (let i = 0; i < days.length; i++){
         let probe = document.getElementById(`day-${days[i].dayNumber}`);
-        probe.style.color = "red";
+        probe.style.color = shouldClear ? "white" : "red";
     }
     
  }
-
-  async function clearDays(){
-    let days = [];
-
-    try {
-         days = await getAllHabitDays();
-    } catch (e) {
-        console.log("Error!");
-        console.log(e);
-    }
-
-    for (let i = 0; i < days.length; i++){
-        let probe = document.getElementById(`day-${days[i].dayNumber}`);
-        probe.style.color = "white";
-    }
- }
-
 
  async function addDay(id){
 
@@ -325,8 +277,6 @@ async function getDescription(){
 
     let nameAndIdArray = id.split("-");
     let dayId = nameAndIdArray[1];
-
-
     let days = [];
 
     try {
@@ -336,24 +286,22 @@ async function getDescription(){
         console.log(e);
     }
 
-
-
     let checker = "";
 
     if(days.length == 0){
         checker = "No match";
     } else {
 
-    for (let i = 0; i < days.length; i++){
+        for (let i = 0; i < days.length; i++){
 
-        if(days[i].dayNumber != dayId){
-            checker = "No match";
-        } else if(days[i].dayNumber == dayId) {
-            checker = "Match";
-            break;
+            if(days[i].dayNumber != dayId){
+                checker = "No match";
+            } else if(days[i].dayNumber == dayId) {
+                checker = "Match";
+                break;
+            }
         }
     }
-}
 
     console.log(checker);
 
@@ -377,6 +325,7 @@ async function getDescription(){
 
           if(result.status == 201){
            alert("Day ADDED");
+           document.getElementById("active-day-id").value = dayId;
            await displayDays();
            await getStreak();
            document.getElementById("daily-description-text").style.display = "none";
@@ -384,54 +333,11 @@ async function getDescription(){
               if(document.getElementById("bonus-box").style.display == "none"){
                 await resetChecker(id);
               }
-           
           }
           else {
         console.log(result.status);
           }
        }
-
-    
-
-
-
-/*
-       if (selectedBtn.dataset.checker == "true"){
-        await deleteDay(habitId,dayId);
-        selectedBtn.dataset.checker = false;
-        alert("Day DELETED");
-        selectedBtn.style.color = "white";
-        await getStreak();
-        document.getElementById("daily-description-text").style.display = "none";
-
-       }
-       else if (selectedBtn.dataset.checker == "false") {
-        let result = await fetch(`https://localhost:7181/Days/AddDay?habitId=${habitId}&dayNumber=${dayId}`, {
-        method: "POST",
-        mode: 'cors',
-        headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-        },
-        });
-
-          if(result.status == 201){
-           selectedBtn.dataset.checker = true;
-           alert("Day ADDED");
-           await displayDays();
-           await getStreak();
-           document.getElementById("daily-description-text").style.display = "none";
-           dayDescriptionAlert();
-              if(document.getElementById("bonus-box").style.display == "none"){
-                await resetChecker(id);
-              }
-           
-          }
-          else {
-        console.log(result.status);
-          }
-       }
-       */
     }
 
 
@@ -456,9 +362,8 @@ async function getDescription(){
 
  async function addDayDescription(){
 
-    let dayNumber = prompt("Enter the number of your selected day:", "0->30/60");
+    let dayNumber = document.getElementById("active-day-id").value;
 
-    parseInt(dayNumber);
 
     let dayDescription = document.getElementById("note-input").value;
     let habitId = document.getElementById("opened-habit-id").value;
@@ -498,10 +403,13 @@ async function getDescription(){
 
  async function displayDayDescription(){
 
+    
     let habitId = document.getElementById("opened-habit-id").value;
+    
+    
     let dayNumber = prompt("Enter a day", "0->30/60");
-
     parseInt(dayNumber);
+    alert(dayNumber);
     
     const response =  await fetch(`https://localhost:7181/Days/GetDayByNumber?dayNumber=${dayNumber}&habitId=${habitId}`, {
         method: "GET",
@@ -511,13 +419,21 @@ async function getDescription(){
             'Access-Control-Allow-Origin': '*'
         }
     });
-    const result = await response.json();
-    
-    console.log(result.note);
+
+
+    // if(response.status == 204) {
+    //     alert("No such day");
+    // }
+
+
+    const result = await response;
+
+    console.log(result);
 
     if(result.note == null){
         alert("No description found.")
     } else {
+        alert("DDDD");
         document.getElementById("daily-description-text").innerHTML = result.note;
         document.getElementById("daily-description-text").style.display = "block";
     }
@@ -560,10 +476,7 @@ async function displayStreak(){
 }
 */
 
-let itemsFromLS = localStorage.getItem("grid");
-let parsedResult = JSON.parse(itemsFromLS);
-let grids = parsedResult || [];
-let bonusGrid;
+
 
 async function resetChecker(dayNumber){
 
@@ -571,8 +484,6 @@ async function resetChecker(dayNumber){
     let nameAndIdArray = dayNumber.split("-");
     let dayId = nameAndIdArray[1];
 
-    
-   
     
     
     const response =  await fetch(`https://localhost:7181/Days/ResetChecker?dayNumber=${dayId}&habitId=${habitId}`, {
@@ -598,13 +509,7 @@ async function resetChecker(dayNumber){
 
            if(confirmAction){
              document.getElementById("bonus-box").style.display = "block";
-
-             
-             bonusGrid = habitId
-
-             grids.push(bonusGrid);
-             localStorage.setItem("grid", JSON.stringify(grids));
-            
+             await setIsExtended();
 
             
            }
@@ -625,8 +530,7 @@ async function deleteHabitDays(){
     });
 
     if(result.status == 201){
-       // await clearDays();
-        await displayDays();
+        await displayDays(true);
     }
     else {
         console.log(result.status);
@@ -640,4 +544,44 @@ function refreshDays(){
        let refresh =  document.getElementById(`day-${i}`);
        refresh.style.color = "white";
     }
+}
+
+async function setIsExtended(){
+    let habitId = document.getElementById("opened-habit-id").value;
+
+    let result = await fetch(`https://localhost:7181/Habits/ExtendHabit?habitId=${habitId}`, {
+        method: "PUT",
+        mode: 'cors',
+        headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+        },
+    });
+
+    if(result.status == 201){
+        
+    }
+    else {
+        console.log(result.status);
+    }
+
+}
+
+async function handelIsExtended(){
+
+    let habit = {};
+
+    try {
+         habit = await getHabitById();
+    } catch (e) {
+        console.log("Error!");
+        console.log(e);
+    }
+
+    if(habit.isExtended == true){
+        document.getElementById("bonus-box").style.display = "block";
+    } else {
+        document.getElementById("bonus-box").style.display = "none";
+    }
+
 }

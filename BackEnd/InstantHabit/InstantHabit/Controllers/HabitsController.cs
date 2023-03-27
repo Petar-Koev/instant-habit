@@ -58,17 +58,20 @@ namespace InstantHabit.Controllers
         [HttpPut]
         [Route("AddDescription")]
         [ProducesResponseType(201)]
-        public async Task<StatusCodeResult> AddDescription([FromQuery] int id, string description )
+        public async Task<AddDescriptionResponse> AddDescription([FromBody] AddDescriptionRequest request)
         {
             try
             {
-                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.AddDescription_StoredProcedure {0}, {1}", id, description);
+                //throw new Exception("Neshto losho stana");
+                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.AddDescription_StoredProcedure {0}, {1}", request.HabitId, request.Description);
             }
-                catch (Exception e)
+                catch (Exception ex)
             {
-                return StatusCode(409);
+                var response = new AddDescriptionResponse(false, ex.Message);
+
+                return response;
             }
-            return StatusCode(201);
+            return new AddDescriptionResponse(true, null);
         }
 
         [HttpGet]
@@ -84,12 +87,28 @@ namespace InstantHabit.Controllers
                                   Id = habit.Id,
                                   Name = habit.Name,
                                   Description = habit.Description,
-                                  CreationDate=habit.CreationDate
+                                  CreationDate=habit.CreationDate,
+                                  IsExtended=habit.IsExtended
 
                               }).FirstOrDefault();
             return linqResult;
-                  
-                        
+                      
+        }
+
+        [HttpPut]
+        [Route("ExtendHabit")]
+        [ProducesResponseType(201)]
+        public async Task<StatusCodeResult> ExtendHabit([FromQuery] int habitId)
+        {
+            try
+            {
+                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.SetIsExtended_StoredProcedure {0}", habitId);
+            }
+            catch (Exception e)
+            {
+                return StatusCode(409);
+            }
+            return StatusCode(201);
         }
 
     }
