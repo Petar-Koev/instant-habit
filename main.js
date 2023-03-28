@@ -1,20 +1,28 @@
 async function addHabit(){
     let newHabitName = document.getElementById("new-habit-input").value;
+
+    let request = {
+        name: newHabitName
+    };
     
-    let result = await fetch(`https://localhost:7181/Habits/AddHabit?name=${newHabitName}`, {
+    let result = await fetch(`https://localhost:7181/Habits/AddHabit`, {
         method: "POST",
         mode: 'cors',
         headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
         },
+        body: JSON.stringify(request),
     });
 
-    if(result.status == 201){
+    let parsedResponse = await result.json();
+    console.log(parsedResponse);
+
+    if(parsedResponse.succeeded == true){
         await displayHabits();
     }
     else {
-        console.log(result.status);
+        console.log(parsedResponse);
     }
 
     document.getElementById("new-habit-input").value = "";
@@ -36,15 +44,8 @@ async function GetAllHabits(){
 }
 
 async function displayHabits(){
-   await GetAllHabits();
-    let allHabits = [];
 
-    try {
-        allHabits = await GetAllHabits();
-    } catch (e) {
-        console.log("Error!");
-        console.log(e);
-    }
+     let allHabits = await getInfoFromDB(GetAllHabits());
     
     let habitsStructure = `
     <div id="habits">
@@ -91,7 +92,6 @@ async function openHabit(value){
     document.getElementById("opened-habit-id").value = id;
     document.getElementById("habit-name-h2").innerHTML = name;
     
-    alert(value);
     let habitArea = document.getElementById("habit-area");
 
     habitArea.style.display = "block";
@@ -102,28 +102,21 @@ async function openHabit(value){
     await displayDays();
     await getStreak();
 
-
 }
 
 
 
 async function DeleteHabit(e){
     e = e || window.event;
-    let allHabits = [];
     let habitArea = document.getElementById("habit-area");
-    
 
-    try {
-        allHabits = await GetAllHabits();
-    } catch (e) {
-        console.log("Error!");
-        console.log(e);
-    }
+    let allHabits = await getInfoFromDB(GetAllHabits());
+    console.log(allHabits);
+    console.log(allHabits[0]);
 
     for(let i = 0; i < allHabits.length; i++){
         if(allHabits[i].id == e.target.value){
           await deleteSQLHabit(e);
-          deleteFromLS(e);
           habitArea.style.display = "none";
         }
     }
@@ -136,7 +129,6 @@ async function DeleteHabit(e){
         openBtns[i].addEventListener("click", async function(e){
         await displayDays();
         await openHabit(openBtns[i].value);
-
         });
     }
 }
@@ -147,7 +139,6 @@ async function setListenersForDeleteBtns(){
     for(let i = 0; i < deleteBtns.length; i++){
         deleteBtns[i].addEventListener("click", async function(e){
            await DeleteHabit(e);
-            
         });
     }
 }
@@ -156,24 +147,33 @@ async function deleteSQLHabit(e){
     e = e || window.event;
 
     let habitToDelete = e.target.value;
+
+    console.log(habitToDelete);
+
+    let request = {
+        id: habitToDelete
+    };
     
-    let result = await fetch(`https://localhost:7181/Habits/DeleteAhabit?id=${habitToDelete}`, {
+    let result = await fetch(`https://localhost:7181/Habits/DeleteAhabit`, {
         method: "DELETE",
         mode: 'cors',
         headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
         },
+        body: JSON.stringify(request),
     });
 
-    if(result.status == 201){
+    let parsedResponse = await result.json();
+    console.log(parsedResponse);
+
+    if(parsedResponse.succeeded == true){
         await displayHabits();
     }
     else {
-        console.log(result.status);
+        console.log(parsedResult);
     }
 
-    document.getElementById("new-habit-input").value = "";
 }
 
 async function addDescription() {
@@ -223,17 +223,9 @@ async function getHabitById(){
 }
 
 async function getDescription(){
-    let selectedHabit;
-
-    try {
-         selectedHabit = await getHabitById();
-    } catch (e) {
-        console.log("Error!");
-        console.log(e);
-    }
+    let selectedHabit = await getInfoFromDB(getHabitById());
 
     document.getElementById("description-text").innerHTML = selectedHabit.description;
-
 }
 
  async function getAllHabitDays(){
@@ -253,19 +245,14 @@ async function getDescription(){
 
  }
 
- async function displayDays(shouldClear = false){
-    let days = [];
+ async function displayDays(){
 
-    try {
-         days = await getAllHabitDays();
-    } catch (e) {
-        console.log("Error!");
-        console.log(e);
-    }
+    refreshDays();
+    let days = await getInfoFromDB(getAllHabitDays());
 
     for (let i = 0; i < days.length; i++){
         let probe = document.getElementById(`day-${days[i].dayNumber}`);
-        probe.style.color = shouldClear ? "white" : "red";
+        probe.style.color = "red";
     }
     
  }
@@ -277,14 +264,7 @@ async function getDescription(){
 
     let nameAndIdArray = id.split("-");
     let dayId = nameAndIdArray[1];
-    let days = [];
-
-    try {
-         days = await getAllHabitDays();
-    } catch (e) {
-        console.log("Error!");
-        console.log(e);
-    }
+    let days = await getInfoFromDB(getAllHabitDays());
 
     let checker = "";
 
@@ -303,7 +283,6 @@ async function getDescription(){
         }
     }
 
-    console.log(checker);
 
     if (checker == "Match"){
         await deleteDay(habitId,dayId);
@@ -364,7 +343,6 @@ async function getDescription(){
 
     let dayNumber = document.getElementById("active-day-id").value;
 
-
     let dayDescription = document.getElementById("note-input").value;
     let habitId = document.getElementById("opened-habit-id").value;
 
@@ -385,8 +363,6 @@ async function getDescription(){
     else {
         console.log(result.status);
     }
-
-    
  }
 
  
@@ -402,14 +378,11 @@ async function getDescription(){
  
 
  async function displayDayDescription(){
-
     
     let habitId = document.getElementById("opened-habit-id").value;
     
-    
     let dayNumber = prompt("Enter a day", "0->30/60");
     parseInt(dayNumber);
-    alert(dayNumber);
     
     const response =  await fetch(`https://localhost:7181/Days/GetDayByNumber?dayNumber=${dayNumber}&habitId=${habitId}`, {
         method: "GET",
@@ -420,22 +393,16 @@ async function getDescription(){
         }
     });
 
-
-    // if(response.status == 204) {
-    //     alert("No such day");
-    // }
-
-
-    const result = await response;
-
-    console.log(result);
-
-    if(result.note == null){
-        alert("No description found.")
+    if(response.status == 204){
+        alert("The selected day is not checked.");
     } else {
-        alert("DDDD");
-        document.getElementById("daily-description-text").innerHTML = result.note;
-        document.getElementById("daily-description-text").style.display = "block";
+        const result = await response.json();
+        if(result.note == null){
+            alert("No description found.")
+        } else {
+            document.getElementById("daily-description-text").innerHTML = result.note;
+            document.getElementById("daily-description-text").style.display = "block";
+        }
     }
 }
 
@@ -457,26 +424,6 @@ async function getStreak(){
     document.getElementById("streak-msg").innerHTML = result.motivationalMessage;
 
 }
-
-/*
-async function displayStreak(){
-
-    let streak;
-
-    try {
-        streak = await getStreak();
-    } catch (e) {
-        console.log("Error!");
-        console.log(e);
-    }
-
-    console.log(streak);
-    console.log(streak.bestStreak);
-    console.log(streak.motivationalMessage);
-}
-*/
-
-
 
 async function resetChecker(dayNumber){
 
@@ -508,10 +455,7 @@ async function resetChecker(dayNumber){
         let confirmAction = confirm("Do you want to add 30 bonus days?"); 
 
            if(confirmAction){
-             document.getElementById("bonus-box").style.display = "block";
              await setIsExtended();
-
-            
            }
     }
 }
@@ -530,7 +474,7 @@ async function deleteHabitDays(){
     });
 
     if(result.status == 201){
-        await displayDays(true);
+        await displayDays();
     }
     else {
         console.log(result.status);
@@ -547,41 +491,52 @@ function refreshDays(){
 }
 
 async function setIsExtended(){
-    let habitId = document.getElementById("opened-habit-id").value;
+    let id = document.getElementById("opened-habit-id").value;
 
-    let result = await fetch(`https://localhost:7181/Habits/ExtendHabit?habitId=${habitId}`, {
+    let request = {
+        habitId: id
+    };
+
+    let result = await fetch(`https://localhost:7181/Habits/ExtendHabit`, {
         method: "PUT",
         mode: 'cors',
         headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
         },
+        body: JSON.stringify(request),
     });
 
-    if(result.status == 201){
-        
+    let parsedResponse = await result.json();
+
+    if(parsedResponse.succeeded == true){
+        document.getElementById("bonus-box").style.display = "block";
     }
     else {
-        console.log(result.status);
+        console.log(parsedResponse);
     }
-
 }
 
 async function handelIsExtended(){
 
-    let habit = {};
-
-    try {
-         habit = await getHabitById();
-    } catch (e) {
-        console.log("Error!");
-        console.log(e);
-    }
+    let habit = await getInfoFromDB(getHabitById());
 
     if(habit.isExtended == true){
         document.getElementById("bonus-box").style.display = "block";
     } else {
         document.getElementById("bonus-box").style.display = "none";
     }
+}
 
+async function getInfoFromDB(method){
+    
+    let task;
+    try {
+         task = await method;
+    } catch (e) {
+        console.log("Error!");
+        console.log(e);
+    }
+
+    return method;
 }

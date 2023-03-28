@@ -46,8 +46,7 @@ CREATE TABLE [InstantHabit].[Days] (
     [Id] int identity(1,1) NOT NULL,
 	[HabitId] int NOT NULL,
 	[DayNumber] int NOT NULL, 
-	[Note] nvarchar(500) NULL,
-	[IsChecked] bit NOT NULL Default 0
+	[Note] nvarchar(500) NULL
 
 	CONSTRAINT [PK_Days] PRIMARY KEY ([Id])
 	CONSTRAINT [FK_HabitId] FOREIGN KEY ([HabitId])  
@@ -56,12 +55,12 @@ CREATE TABLE [InstantHabit].[Days] (
 );
 GO
 
-INSERT INTO [InstantHabit].[Days] (HabitId, DayNumber, Note, IsChecked)
+INSERT INTO [InstantHabit].[Days] (HabitId, DayNumber, Note)
 VALUES
-     (1,3,'My muscles hurt a lot, damn',1),
-	 (2,4,'I almost drowned today',1 ),
-	 (3,2,NULL,0),
-	 (4,5,'A7X - Afterlife Solo[Done]',1);
+     (1,3,'My muscles hurt a lot, damn'),
+	 (2,4,'I almost drowned today' ),
+	 (3,2,NULL),
+	 (4,5,'A7X - Afterlife Solo[Done]');
 GO
 
 -- Declare Stored Procedures
@@ -107,7 +106,7 @@ CREATE OR ALTER PROCEDURE [InstantHabit].[AddNewDay_StoredProcedure]
 @dayNumber int
 AS
 BEGIN
-    INSERT INTO InstantHabit.Days (HabitId, DayNumber, Note, IsChecked) VALUES (@habitId, @dayNumber, NULL,1)
+    INSERT INTO InstantHabit.Days (HabitId, DayNumber, Note) VALUES (@habitId, @dayNumber, NULL)
 END
 GO
 

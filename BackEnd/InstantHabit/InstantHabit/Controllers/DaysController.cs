@@ -93,7 +93,6 @@ namespace InstantHabit.Controllers
                                   Id = day.Id,
                                   DayNumber = day.DayNumber,
                                   Note = day.Note,
-                                  IsChecked = day.IsChecked,
                                   HabitId = day.HabitId,
 
                               }).FirstOrDefault();
@@ -114,7 +113,6 @@ namespace InstantHabit.Controllers
                                   Id = day.Id,
                                   DayNumber = day.DayNumber,
                                   Note = day.Note,
-                                  IsChecked = day.IsChecked,
                                   HabitId = day.HabitId,
 
                               }).ToList();

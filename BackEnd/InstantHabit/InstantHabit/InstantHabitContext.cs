@@ -61,8 +61,6 @@ namespace InstantHabit
                 entity.Property(e => e.DayNumber)
                 .IsRequired();
 
-                entity.Property(e => e.IsChecked)
-                .IsRequired();
 
                 entity.HasOne(d => d.Habit)
                     .WithMany(p => p.Day)
