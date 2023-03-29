@@ -1,4 +1,5 @@
 ﻿using InstantHabit.Models;
+using InstantHabit.Services;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -33,51 +34,65 @@ namespace InstantHabit.Controllers
         [HttpPost]
         [Route("AddDay")]
         [ProducesResponseType(201)]
-        public async Task<StatusCodeResult> AddDay([FromQuery] int habitId, int dayNumber)
+        public async Task<AddDayResponse> AddDay([FromBody] AddDayRequest request)
         {
-            try
+            var checkForMatch = DaysServices.MatchChecker(request.HabitId, request.DayNumber, _context);
+
+            if(checkForMatch == "No match")
             {
-                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.AddNewDay_StoredProcedure {0}, {1}", habitId, dayNumber);
-            }
-            catch (Exception e)
+                try
+                {
+                    _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.AddNewDay_StoredProcedure {0}, {1}", request.HabitId, request.DayNumber);
+                }
+                catch (Exception ex)
+                {
+
+                    var response = new AddDayResponse(false, ex.Message);
+                    return response;
+                }
+                return new AddDayResponse(true, null);
+            } else if(checkForMatch == "Match")
             {
-                return StatusCode(409);
+                return new AddDayResponse(false, checkForMatch);
             }
-            return StatusCode(201);
+            return new AddDayResponse(false, "something went wrong");
+            
         }
 
         [HttpDelete]
         [Route("DeleteDay")]
         [ProducesResponseType(201)]
-        public async Task<StatusCodeResult> DeleteDay([FromQuery] int habitId, int dayNumber)
+        public async Task<DeleteDayResponse> DeleteDay([FromBody] DeleteDayRequest request)
         {
             try
             {
-                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.DeleteDay_StoredProcedure {0}, {1}", habitId, dayNumber);
+                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.DeleteDay_StoredProcedure {0}, {1}", request.HabitId, request.DayNumber);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return StatusCode(409);
+                var response = new DeleteDayResponse(false, ex.Message);
+                return response;
             }
-            return StatusCode(201);
+            return new DeleteDayResponse(true, null);
         }
 
         [HttpPut]
         [Route("AddDayDescription")]
         [ProducesResponseType(201)]
-        public async Task<StatusCodeResult> AddDescription([FromQuery] int habitId,int dayNumber, string description)
+        public async Task<AddDayDescriptionResponse> AddDescription([FromBody] AddDayDescriptionRequest request)
         {
             try
             {
                 _context.Database.ExecuteSqlRaw
-                ("EXECUTE InstantHabit.AddDayDescription_StoredProcedure {0}, {1}, {2}", habitId, dayNumber, description);
+                ("EXECUTE InstantHabit.AddDayDescription_StoredProcedure {0}, {1}, {2}", request.HabitId, request.DayNumber, request.Description);
 
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return StatusCode(409);
+                var responce = new AddDayDescriptionResponse(false, ex.Message);
+                return responce;
             }
-            return StatusCode(201);
+            return new AddDayDescriptionResponse(true, null);
         }
 
         [HttpGet]
@@ -191,48 +206,34 @@ namespace InstantHabit.Controllers
             return result;
 
         }
-
         
         [HttpGet]
         [Route("ResetChecker")]
         public async Task<string> ResetChecker([FromQuery] int dayNumber, int habitId)
         {
             var daysList = _context.Days.ToList<Day>();
-            string msg = "";
 
-            var result = (from day in daysList
-                          where day.HabitId == habitId
-                          select day).ToList();
+            var confirmation = DaysServices.DaysListResetChecker(dayNumber, daysList, habitId);
 
-            if ((dayNumber >= 25 && dayNumber <= 30) && result.Count < 20)
-            {
-                msg = "You failed.";
-
-            } else if ((dayNumber >= 25 && dayNumber <= 30) && result.Count >= 20)
-            {
-                msg = "You succeeded.";
-            }
-
-            return msg;
-
+            return confirmation ;
         }
 
         [HttpDelete]
         [Route("DeleteHabitDays")]
         [ProducesResponseType(201)]
-        public async Task<StatusCodeResult> DeleteHabitDays([FromQuery] int habitId)
+        public async Task<DeleteHabitDaysResponse> DeleteHabitDays([FromBody] DeleteHabitDaysRequest request)
         {
             try
             {
-                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.DeleteDays_StoredProcedure {0}", habitId);
+                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.DeleteDays_StoredProcedure {0}", request.HabitId);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return StatusCode(409);
+                var response = new DeleteHabitDaysResponse(false, ex.Message);
+                return response;
             }
-            return StatusCode(201);
+            return new DeleteHabitDaysResponse(true, null);
         }
-
 
     }
 }
