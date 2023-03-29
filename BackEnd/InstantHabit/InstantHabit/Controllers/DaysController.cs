@@ -22,11 +22,7 @@ namespace InstantHabit.Controllers
         [Route("GetAllHabitDays")]
         public async Task<List<Day>> GetAllHabitDays([FromQuery] int habitId)
         {
-            var days = _context.Days.ToList<Day>();
-
-            var result = (from day in days
-                         where day.HabitId == habitId
-                         select day).ToList();
+            var result = DaysServices.getDaysFromDB(_context,habitId);
 
             return result;
         }
@@ -99,121 +95,24 @@ namespace InstantHabit.Controllers
         [Route("GetDayByNumber")]
         public async Task<Day> GetDayByNumber([FromQuery] int dayNumber, int habitId)
         {
-            var daysList = _context.Days.ToList<Day>();
-
-            var linqResult = (from day in daysList
-                              where day.HabitId == habitId && day.DayNumber == dayNumber
-                              select new Day
-                              {
-                                  Id = day.Id,
-                                  DayNumber = day.DayNumber,
-                                  Note = day.Note,
-                                  HabitId = day.HabitId,
-
-                              }).FirstOrDefault();
-            return linqResult;
-
+            return DaysServices.getDayFromDB(_context,habitId, dayNumber);
         }
 
         [HttpGet]
         [Route("GetBestStreak")]
         public async Task<BestStreakResponse> GetBestStreak([FromQuery]  int habitId)
         {
-            var daysList = _context.Days.ToList<Day>();
-
-            var linqResult = (from day in daysList
-                              where day.HabitId == habitId 
-                              select new Day
-                              {
-                                  Id = day.Id,
-                                  DayNumber = day.DayNumber,
-                                  Note = day.Note,
-                                  HabitId = day.HabitId,
-
-                              }).ToList();
-
-            var numbers = new List<int>();
-
-            foreach(var day in linqResult)
-            {
-                numbers.Add(day.DayNumber);
-            }
-
-            numbers.Sort();
-
-            var bestStreak = 1;
-            var bestStreakList = new List<int>();
-
-            if(numbers.Count <= 1)
-            {
-                bestStreak = numbers.Count;
-                bestStreakList.Add(bestStreak);
-            } else
-            {
-                for (var i = 0; i < numbers.Count - 1; i++)
-                {
-                    if (numbers[i + 1] - numbers[i] == 1)
-                    {
-                        bestStreak++;
-                        if (i + 1 == numbers.Count - 1)
-                        {
-                            bestStreakList.Add(bestStreak);
-                        }
-                    }
-                    else
-                    {
-                        bestStreakList.Add(bestStreak);
-                        bestStreak = 1;
-                    }
-                }
-            }
-
-            var msg = "";
-
-           if (bestStreakList.Max() >= 3 && bestStreakList.Max() <= 8)
-            {
-                msg = "Well Done";
-            }else if (bestStreakList.Max() >= 9 && bestStreakList.Max() <= 14)
-            {
-                msg = "Great Job";
-            }else if (bestStreakList.Max() >= 15 && bestStreakList.Max() <= 24)
-            {
-                msg = "You're on FIRE!";
-            }
-            else if (bestStreakList.Max() >= 25 && bestStreakList.Max() <= 30)
-            {
-                msg = "Congratulations!!!";
-            }
-            else if (bestStreakList.Max() >= 31 && bestStreakList.Max() <= 41)
-            {
-                msg = "Hard Work pays off";
-            }
-            else if (bestStreakList.Max() >= 42 && bestStreakList.Max() <= 60)
-            {
-                msg = "TOP NOTCH DEVELOPMENT!";
-            }
-            else
-            {
-                msg = "Keep on going";
-            }
-
-            var result = new BestStreakResponse
-            {
-                BestStreak = bestStreakList.Max(),
-                MotivationalMessage = msg
-            };
+            var result = DaysServices.GetStreakMessage(_context,habitId);
 
             return result;
-
+           
         }
         
         [HttpGet]
         [Route("ResetChecker")]
         public async Task<string> ResetChecker([FromQuery] int dayNumber, int habitId)
         {
-            var daysList = _context.Days.ToList<Day>();
-
-            var confirmation = DaysServices.DaysListResetChecker(dayNumber, daysList, habitId);
+            var confirmation = DaysServices.DaysListResetChecker(dayNumber, habitId, _context);
 
             return confirmation ;
         }

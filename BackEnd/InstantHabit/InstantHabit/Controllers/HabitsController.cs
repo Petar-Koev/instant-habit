@@ -1,4 +1,5 @@
 ﻿using InstantHabit.Models;
+using InstantHabit.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
@@ -79,20 +80,8 @@ namespace InstantHabit.Controllers
         [Route("GetHabitById")]
         public async Task<Habit> GetHabitById([FromQuery] int id)
         {
-            var habitsList = _context.Habits.ToList<Habit>();
 
-            var linqResult = (from habit in habitsList
-                              where habit.Id == id
-                              select new Habit 
-                              { 
-                                  Id = habit.Id,
-                                  Name = habit.Name,
-                                  Description = habit.Description,
-                                  CreationDate=habit.CreationDate,
-                                  IsExtended=habit.IsExtended
-
-                              }).FirstOrDefault();
-            return linqResult;
+            return HabitsService.getDayFromDB(_context, id);
                       
         }
 
