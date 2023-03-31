@@ -25,7 +25,7 @@ namespace InstantHabit
         {
             if (!optionsBuilder.IsConfigured)
             {
-                optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=InstantHabit;Trusted_Connection=True;");
+                optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=InstantHabit;Trusted_Connection=True;TrustServerCertificate=True;");
             }
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -45,6 +45,9 @@ namespace InstantHabit
                 entity.Property(e => e.Description)
                 .IsRequired(false)
                     .HasMaxLength(500);
+
+                entity.Property(e => e.IsExtended)
+               .IsRequired();
             });
 
             modelBuilder.Entity<Day>(entity =>
@@ -58,8 +61,6 @@ namespace InstantHabit
                 entity.Property(e => e.DayNumber)
                 .IsRequired();
 
-                entity.Property(e => e.IsChecked)
-                .IsRequired();
 
                 entity.HasOne(d => d.Habit)
                     .WithMany(p => p.Day)

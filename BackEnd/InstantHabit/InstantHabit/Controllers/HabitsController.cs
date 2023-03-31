@@ -1,4 +1,5 @@
 ﻿using InstantHabit.Models;
+using InstantHabit.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
@@ -19,16 +20,17 @@ namespace InstantHabit.Controllers
         [HttpPost]
         [Route("AddHabit")]
         [ProducesResponseType(201)]
-        public async Task<StatusCodeResult> AddHabit([FromQuery] string name)
+        public async Task<AddHabitResponse> AddHabit([FromBody] AddHabitRequest request)
         {
             try
             {
-                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.CreateNewHabit_StoredProcedure {0}", name);
-            } catch(Exception e)
+                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.CreateNewHabit_StoredProcedure {0}", request.Name);
+            } catch(Exception ex)
             {
-                return StatusCode(409);
+                var response = new AddHabitResponse(false, ex.Message);
+                return response;
             }
-            return StatusCode(201);
+            return new AddHabitResponse(true, null);
         }
 
         [HttpGet]
@@ -42,54 +44,63 @@ namespace InstantHabit.Controllers
         [HttpDelete]
         [Route("DeleteAhabit")]
         [ProducesResponseType(201)]
-        public async Task<StatusCodeResult> DeleteAhabit([FromQuery] int id)
+        public async Task<DeleteAhabitResponse> DeleteAhabit([FromBody] DeleteAhabitRequest request)
         {
             try
             {
-                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.DeleteAhabit_StoredProcedure {0}", id);
+                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.DeleteAhabit_StoredProcedure {0}", request.Id);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return StatusCode(409);
+                var response = new DeleteAhabitResponse(false, ex.Message);
+                return response;
             }
-            return StatusCode(201);
+            return new DeleteAhabitResponse(true, null);
         }
 
         [HttpPut]
         [Route("AddDescription")]
         [ProducesResponseType(201)]
-        public async Task<StatusCodeResult> AddDescription([FromQuery] int id, string description )
+        public async Task<AddDescriptionResponse> AddDescription([FromBody] AddDescriptionRequest request)
         {
             try
             {
-                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.AddDescription_StoredProcedure {0}, {1}", id, description);
+                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.AddDescription_StoredProcedure {0}, {1}", request.HabitId, request.Description);
             }
-                catch (Exception e)
+                catch (Exception ex)
             {
-                return StatusCode(409);
+                var response = new AddDescriptionResponse(false, ex.Message);
+
+                return response;
             }
-            return StatusCode(201);
+            return new AddDescriptionResponse(true, null);
         }
 
         [HttpGet]
         [Route("GetHabitById")]
         public async Task<Habit> GetHabitById([FromQuery] int id)
         {
-            var habitsList = _context.Habits.ToList<Habit>();
 
-            var linqResult = (from habit in habitsList
-                              where habit.Id == id
-                              select new Habit 
-                              { 
-                                  Id = habit.Id,
-                                  Name = habit.Name,
-                                  Description = habit.Description,
-                                  CreationDate=habit.CreationDate
+            return HabitsService.getDayFromDB(_context, id);
+                      
+        }
 
-                              }).FirstOrDefault();
-            return linqResult;
-                  
-                        
+        [HttpPut]
+        [Route("ExtendHabit")]
+        [ProducesResponseType(201)]
+        public async Task<ExtendHabitResponse> ExtendHabit([FromBody] ExtendHabitRequest request)
+        {
+            try
+            {
+                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.SetIsExtended_StoredProcedure {0}", request.HabitId);
+            }
+            catch (Exception ex)
+            {
+                var response = new ExtendHabitResponse(false, ex.Message);  
+
+                return response;
+            }
+            return new ExtendHabitResponse(true, null);
         }
 
     }

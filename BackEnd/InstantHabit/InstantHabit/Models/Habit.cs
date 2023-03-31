@@ -10,11 +10,11 @@ namespace InstantHabit.Models
         public string Name { get; set; }
         public DateTime CreationDate { get; set; }
         public string Description { get; set; }
+        public bool IsExtended { get; set; }
 
         public virtual ICollection<Day> Day { get; set; }
 
-        
-}
+    }
 
 
     

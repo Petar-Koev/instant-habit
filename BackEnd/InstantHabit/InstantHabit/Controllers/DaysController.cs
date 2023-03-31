@@ -1,4 +1,5 @@
 ﻿using InstantHabit.Models;
+using InstantHabit.Services;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -21,11 +22,7 @@ namespace InstantHabit.Controllers
         [Route("GetAllHabitDays")]
         public async Task<List<Day>> GetAllHabitDays([FromQuery] int habitId)
         {
-            var days = _context.Days.ToList<Day>();
-
-            var result = (from day in days
-                         where day.HabitId == habitId
-                         select day).ToList();
+            var result = DaysServices.getDaysFromDB(_context,habitId);
 
             return result;
         }
@@ -33,142 +30,108 @@ namespace InstantHabit.Controllers
         [HttpPost]
         [Route("AddDay")]
         [ProducesResponseType(201)]
-        public async Task<StatusCodeResult> AddDay([FromQuery] int habitId, int dayNumber)
+        public async Task<AddDayResponse> AddDay([FromBody] AddDayRequest request)
         {
-            try
+            var checkForMatch = DaysServices.MatchChecker(request.HabitId, request.DayNumber, _context);
+
+            if(checkForMatch == "No match")
             {
-                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.AddNewDay_StoredProcedure {0}, {1}", habitId, dayNumber);
-            }
-            catch (Exception e)
+                try
+                {
+                    _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.AddNewDay_StoredProcedure {0}, {1}", request.HabitId, request.DayNumber);
+                }
+                catch (Exception ex)
+                {
+
+                    var response = new AddDayResponse(false, ex.Message);
+                    return response;
+                }
+                return new AddDayResponse(true, null);
+            } else if(checkForMatch == "Match")
             {
-                return StatusCode(409);
+                return new AddDayResponse(false, checkForMatch);
             }
-            return StatusCode(201);
+            return new AddDayResponse(false, "something went wrong");
+            
         }
 
         [HttpDelete]
         [Route("DeleteDay")]
         [ProducesResponseType(201)]
-        public async Task<StatusCodeResult> DeleteDay([FromQuery] int habitId, int dayNumber)
+        public async Task<DeleteDayResponse> DeleteDay([FromBody] DeleteDayRequest request)
         {
             try
             {
-                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.DeleteDay_StoredProcedure {0}, {1}", habitId, dayNumber);
+                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.DeleteDay_StoredProcedure {0}, {1}", request.HabitId, request.DayNumber);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return StatusCode(409);
+                var response = new DeleteDayResponse(false, ex.Message);
+                return response;
             }
-            return StatusCode(201);
+            return new DeleteDayResponse(true, null);
         }
 
         [HttpPut]
         [Route("AddDayDescription")]
         [ProducesResponseType(201)]
-        public async Task<StatusCodeResult> AddDescription([FromQuery] int habitId,int dayNumber, string description)
+        public async Task<AddDayDescriptionResponse> AddDescription([FromBody] AddDayDescriptionRequest request)
         {
             try
             {
                 _context.Database.ExecuteSqlRaw
-                ("EXECUTE InstantHabit.AddDayDescription_StoredProcedure {0}, {1}, {2}", habitId, dayNumber, description);
+                ("EXECUTE InstantHabit.AddDayDescription_StoredProcedure {0}, {1}, {2}", request.HabitId, request.DayNumber, request.Description);
 
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                return StatusCode(409);
+                var responce = new AddDayDescriptionResponse(false, ex.Message);
+                return responce;
             }
-            return StatusCode(201);
+            return new AddDayDescriptionResponse(true, null);
         }
 
         [HttpGet]
         [Route("GetDayByNumber")]
         public async Task<Day> GetDayByNumber([FromQuery] int dayNumber, int habitId)
         {
-            var daysList = _context.Days.ToList<Day>();
-
-            var linqResult = (from day in daysList
-                              where day.HabitId == habitId && day.DayNumber == dayNumber
-                              select new Day
-                              {
-                                  Id = day.Id,
-                                  DayNumber = day.DayNumber,
-                                  Note = day.Note,
-                                  IsChecked = day.IsChecked,
-                                  HabitId = day.HabitId,
-
-                              }).FirstOrDefault();
-            return linqResult;
-
+            return DaysServices.getDayFromDB(_context,habitId, dayNumber);
         }
 
         [HttpGet]
         [Route("GetBestStreak")]
         public async Task<BestStreakResponse> GetBestStreak([FromQuery]  int habitId)
         {
-            var daysList = _context.Days.ToList<Day>();
-
-            var linqResult = (from day in daysList
-                              where day.HabitId == habitId 
-                              select new Day
-                              {
-                                  Id = day.Id,
-                                  DayNumber = day.DayNumber,
-                                  Note = day.Note,
-                                  IsChecked = day.IsChecked,
-                                  HabitId = day.HabitId,
-
-                              }).ToList();
-
-            var numbers = new List<int>();
-
-            foreach(var day in linqResult)
-            {
-                numbers.Add(day.DayNumber);
-            }
-
-            numbers.Sort();
-
-            var bestStreak = 1;
-            var bestStreakList = new List<int>();
-
-            for(var i = 0; i < numbers.Count - 1; i++)
-            {
-                if(numbers[i+1] - numbers[i] == 1)
-                {
-                    bestStreak++;
-                    if(i+1 == numbers.Count - 1)
-                    {
-                        bestStreakList.Add(bestStreak);
-                    }
-                }
-                else
-                {
-                    bestStreakList.Add(bestStreak);
-                    bestStreak = 1;
-                }
-            }
-
-            var msg = "";
-
-           if (bestStreakList.Max() >= 3 && bestStreakList.Max() <= 5)
-            {
-                msg = "Well Done";
-            }else if (bestStreakList.Max() >= 6 && bestStreakList.Max() <= 8)
-            {
-                msg = "Great Job";
-            }
-
-            var result = new BestStreakResponse
-            {
-                BestStreak = bestStreakList.Max(),
-                MotivationalMessage = msg
-            };
-
-
-
+            var result = DaysServices.GetStreakMessage(_context,habitId);
 
             return result;
+           
+        }
+        
+        [HttpGet]
+        [Route("ResetChecker")]
+        public async Task<string> ResetChecker([FromQuery] int dayNumber, int habitId)
+        {
+            var confirmation = DaysServices.DaysListResetChecker(dayNumber, habitId, _context);
 
+            return confirmation ;
+        }
+
+        [HttpDelete]
+        [Route("DeleteHabitDays")]
+        [ProducesResponseType(201)]
+        public async Task<DeleteHabitDaysResponse> DeleteHabitDays([FromBody] DeleteHabitDaysRequest request)
+        {
+            try
+            {
+                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.DeleteDays_StoredProcedure {0}", request.HabitId);
+            }
+            catch (Exception ex)
+            {
+                var response = new DeleteHabitDaysResponse(false, ex.Message);
+                return response;
+            }
+            return new DeleteHabitDaysResponse(true, null);
         }
 
     }

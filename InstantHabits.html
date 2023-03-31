@@ -49,15 +49,9 @@
    
        <div id="habit-area">
         <input type="hidden" id="opened-habit-id" value="">
+        <input type="hidden" id="active-day-id" value="">
         <div id="habit">
           <h2 id="habit-name-h2">Habit's Name:</h2>
-          <!--
-       <div id="checker">
-          <input type="text" id="day-input" placeholder="Choose a day..."/>
-              <input type="submit" id="day-check" value="Check"/>
-              <input type="submit" id="day-uncheck" value="Uncheck"/>
-       </div>
-       -->
 
        <div id="habit-note">
         <input type="text" id="description-input" 
@@ -66,7 +60,6 @@
           onclick="addDescription()" value="Add description"/>
         <p id="description-text" >This should be the place for HABIT description!!!
         </p>
-        
        </div> 
   
        <div class="box-ex container-fluid">
@@ -149,19 +142,96 @@
       </div>
     </div>
   </div>
+
+  <div class="box-ex container-fluid" id="bonus-box" style="display: none;" data-checker="false" data-target="empty">
+    <div class="row">
+      <div class="col-md-12">
+        <button type="button" class="box col-md-3" id="day-31" data-checker="false" onclick="addDay(this.id)" value="31">31</button>
+        <button type="button" class="box col-md-3" id="day-32" data-checker="false" onclick="addDay(this.id)" value="32">32</button>
+        <button type="button" class="box col-md-3" 
+        id="day-33" data-checker="false" onclick="addDay(this.id)" value="33">33</button>
+        <button type="button" class="box col-md-3" 
+        id="day-34" data-checker="false" onclick="addDay(this.id)" value="34">34</button>
+        <button type="button" class="box col-md-3" 
+        id="day-35" data-checker="false" onclick="addDay(this.id)" value="35">35</button>
+        <button type="button" class="box col-md-3" 
+        id="day-36" data-checker="false" onclick="addDay(this.id)" value="36">36</button>
+      </div>
+    </div>
+     <div class="row">
+      <div class="col-md-12">
+         <button type="button" class="box col-md-3" 
+         id="day-37" data-checker="false" onclick="addDay(this.id)" value="37">37</button>
+        <button type="button" class="box col-md-3" 
+        id="day-38" data-checker="false" onclick="addDay(this.id)" value="38">38</button>
+        <button type="button" class="box col-md-3" 
+        id="day-39" data-checker="false" onclick="addDay(this.id)" value="39">39</button>
+        <button type="button" class="box col-md-3" 
+        id="day-40" data-checker="false" onclick="addDay(this.id)" value="40">40</button>
+        <button type="button" class="box col-md-3" 
+        id="day-41" data-checker="false" onclick="addDay(this.id)" value="41">41</button>
+        <button type="button" class="box col-md-3" 
+        id="day-42" data-checker="false" onclick="addDay(this.id)" value="42">42</button>
+      </div>
+    </div>
+     <div class="row">
+      <div class="col-md-12">
+        <button type="button" class="box col-md-3" 
+        id="day-43" data-checker="false" onclick="addDay(this.id)"value="43">43</button>
+        <button type="button" class="box col-md-3" 
+        id="day-44" data-checker="false" onclick="addDay(this.id)" value="44">44</button>
+        <button type="button" class="box col-md-3" 
+        id="day-45" data-checker="false" onclick="addDay(this.id)" value="45">45</button>
+        <button type="button" class="box col-md-3" 
+        id="day-46" data-checker="false" onclick="addDay(this.id)"value="46">46</button>
+        <button type="button" class="box col-md-3" 
+        id="day-47" data-checker="false" onclick="addDay(this.id)" value="47">47</button>
+        <button type="button" class="box col-md-3" 
+        id="day-48" data-checker="false" onclick="addDay(this.id)" value="48">48</button>
+      </div>
+    </div>
+     <div class="row">
+      <div class="col-md-12">
+        <button type="button" class="box col-md-3" 
+        id="day-49" data-checker="false" onclick="addDay(this.id)" value="49">49</button>
+        <button type="button" class="box col-md-3" 
+        id="day-50" data-checker="false" onclick="addDay(this.id)" value="50">50</button>
+        <button type="button" class="box col-md-3" 
+        id="day-51" data-checker="false" onclick="addDay(this.id)" value="51">51</button>
+        <button type="button" class="box col-md-3" 
+        id="day-52" data-checker="false" onclick="addDay(this.id)" value="52">52</button>
+        <button type="button" class="box col-md-3" 
+        id="day-53" data-checker="false" onclick="addDay(this.id)" value="53">53</button>
+        <button type="button" class="box col-md-3" 
+        id="day-54" data-checker="false" onclick="addDay(this.id)" value="54">54</button>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12">
+         <button type="button" class="box col-md-3" 
+         id="day-55" data-checker="false" onclick="addDay(this.id)" value="55">55</button>
+        <button type="button" class="box col-md-3" 
+        id="day-56" data-checker="false" onclick="addDay(this.id)" value="56">56</button>
+        <button type="button" class="box col-md-3" 
+        id="day-57" data-checker="false" onclick="addDay(this.id)" value="57">57</button>
+        <button type="button" class="box col-md-3" 
+        id="day-58" data-checker="false" onclick="addDay(this.id)" value="58">58</button>
+        <button type="button" class="box col-md-3" 
+        id="day-59" data-checker="false" onclick="addDay(this.id)" value="59">59</button>
+        <button type="button" class="box col-md-3" 
+        id="day-60" data-checker="false" onclick="addDay(this.id)" value="60">60</button>
+      </div>
+    </div>
+  </div>
   
   <div id="streak-info">
-  <p id="streak">Best streak: [???] </p>
-  <p id="streak"> Well done! </p>
+  <p id="streak-number">Best streak: [???] </p>
+  <p id="streak-msg"> Well done! </p>
   </div>
   
   <div id="daily-notes" style="display: none;">
     <input type="text" id="note-input" placeholder="Add a note for day(?)..."/>
     <button id="note-submit" onclick="addDayDescription()">Add</button>
-    <p id="daily-note-text">This should be the place for daily
-    notes..it could get extremly long so I have to find a way 
-    to control it.
-    </p>
  </div>
 
  <div>
@@ -169,17 +239,6 @@
   </button>
     <p id="daily-description-text">This should be the place for daily notes..
  </div>
-  
-  <button id="extend-btn"> 
-  Extend/Reset
-  </button>
-  </div>
-
-       </div>
-
-       
-      </div>
-    
 
    <script src="main.js"></script>
    <script src="jquery-3.6.0.min.js"></script>
