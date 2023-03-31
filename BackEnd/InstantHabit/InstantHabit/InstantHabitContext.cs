@@ -25,7 +25,11 @@ namespace InstantHabit
         {
             if (!optionsBuilder.IsConfigured)
             {
+<<<<<<< HEAD
                 optionsBuilder.UseSqlServer("Server=(localdb)\\mssqllocaldb;Database=InstantHabit;Trusted_Connection=True;TrustServerCertificate=True;");
+=======
+                optionsBuilder.UseSqlServer("Server=DESKTOP-4858O2V;Database=InstantHabit;Trusted_Connection=True;TrustServerCertificate=True;");
+>>>>>>> b5645a20a6c3d48ed76120192829632239a1a3e2
             }
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)

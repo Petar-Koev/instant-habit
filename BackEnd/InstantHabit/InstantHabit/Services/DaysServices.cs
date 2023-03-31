@@ -30,7 +30,18 @@ namespace InstantHabit.Services
 
             var linqResult = (from day in days
                               where day.HabitId == habitId && day.DayNumber == num
+<<<<<<< HEAD
                               select day).FirstOrDefault();
+=======
+                              select new Day
+                              {
+                                  Id = day.Id,
+                                  DayNumber = day.DayNumber,
+                                  Note = day.Note,
+                                  HabitId = day.HabitId,
+
+                              }).FirstOrDefault();
+>>>>>>> b5645a20a6c3d48ed76120192829632239a1a3e2
 
             return linqResult;
         }
