@@ -1,7 +1,6 @@
     async function addHabit(){
         let newHabitName = document.getElementById("new-habit-input").value;
         let request = {name: newHabitName};
-
         let response = await instantHabitApi.habits.addHabit(request);
         
         if(response.succeeded == true){
@@ -191,9 +190,7 @@
     async function getAllHabitDays(){
 
         let habitId = document.getElementById("opened-habit-id").value;
-
-        let url = `Days/GetAllHabitDays?habitId=${habitId}`;
-        let response = await queryFetch(url, "GET");
+        let response = await instantHabitApi.days.getAllHabitDays(habitId);
 
         return  response;
     }
@@ -218,7 +215,7 @@
 
         let request = {habitId: currentHabitId, dayNumber: values.id};
 
-        let response = await dbFetch("Days", "AddDay", "POST", request);
+        let response = await instantHabitApi.days.addDay(request);
 
         if(response.succeeded == true){
             await updateSelectedDay(values); 
@@ -248,7 +245,7 @@
     async function deleteDay(id, num){
 
         let request = {habitId: id, dayNumber: num};
-        let response = await dbFetch("Days","DeleteDay","DELETE",request);
+        let response = await instantHabitApi.days.deleteDay(request);
 
         if(response.succeeded == true){
             await displayDays();
@@ -266,7 +263,7 @@
         let id = document.getElementById("opened-habit-id").value;
         let request = {habitId: id, dayNumber: dayNum, description: dayDescription};
 
-        let response = await dbFetch("Days", "AddDayDescription", "PUT", request);
+        let response = await instantHabitApi.days.addDayDescription(request);
 
         if(response.succeeded == true){
             updateDescription(dayNum);
@@ -300,41 +297,20 @@
         let dayNumber = prompt("Enter a day", "0->30/60");
         parseInt(dayNumber);
 
-        /*
-        let url = `Days/GetDayByNumber?dayNumber=${dayNumber}&habitId=${habitId}`;
+        let result = await instantHabitApi.days.displayDayDescription(dayNumber,habitId);
 
-        let response = await queryFetch(url, "GET");
-        */
-        
-        
-        const response =  await fetch(`https://localhost:7181/Days/GetDayByNumber?dayNumber=${dayNumber}&habitId=${habitId}`, {
-            method: "GET",
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            }
-        });
-
-        if(response.status == 204){
-            alert("The selected day is not checked.");
-        } else {
-            const result = await response.json();
             if(result.note == null){
                 alert("No description found.")
             } else {
                 document.getElementById("daily-description-text").innerHTML = result.note;
                 document.getElementById("daily-description-text").style.display = "block";
-            }
         }
     }
 
     async function getStreak(){
 
         let habitId = document.getElementById("opened-habit-id").value;
-        let url = `Days/GetBestStreak?habitId=${habitId}`;
-
-        let response = await queryFetch(url, "GET");
+        let response = await instantHabitApi.days.getStreak(habitId);
 
         document.getElementById("streak-number").innerHTML = `Your best streak: ${response.bestStreak} day/s`;
         document.getElementById("streak-msg").innerHTML = response.motivationalMessage;
@@ -343,16 +319,7 @@
     async function resetChecker(dayNumber){
 
         let habitId = document.getElementById("opened-habit-id").value;
-
-        const response =  await fetch(`https://localhost:7181/Days/ResetChecker?dayNumber=${dayNumber}&habitId=${habitId}`, {
-            method: "GET",
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            }
-        });
-        const result = await response.text();
+        let result = await instantHabitApi.days.resetChecker(dayNumber, habitId);
 
         if(result == "You failed."){
             await resetGrid();
@@ -382,7 +349,7 @@
         let id = document.getElementById("opened-habit-id").value;
         let request = {habitId: id};
 
-        let response = await dbFetch("Days", "DeleteHabitDays", "DELETE", request);
+        let response = await instantHabitApi.days.deleteHabitDays(request);
 
         if(response.succeeded == true){
             await displayDays();
@@ -437,36 +404,6 @@
 
         return method;
     }
-
-    async function dbFetch(controller,apiMethod,operation,apiRequest){
-        let request = apiRequest;
-
-        let result = await fetch(`https://localhost:7181/${controller}/${apiMethod}`, {
-            method: operation,
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            },
-            body: JSON.stringify(request),
-        });
-
-        let parsedResponse = await result.json();
-        return parsedResponse;
-    }
-
-    async function queryFetch(url, apiMethod) {
-       const response =  await fetch(`https://localhost:7181/${url}`, {
-            method: apiMethod,
-            mode: 'cors',
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': '*'
-            }
-        });
-        const result = await response.json();
-        return result;
-      }
 
       let instantHabitApi = {
         habits: { 
@@ -550,32 +487,118 @@
                let result = await response.json();
                return result;
             }
-
-        }
-        
-
-      };
-
-      // TODO: 
-      /*
-      let InstantHabitApi = {
-        getDaysByNumber: async function () {
-            const response =  await fetch(`https://localhost:7181/Days/GetDayByNumber?dayNumber=${dayNumber}&habitId=${habitId}`, {
-                method: "GET",
-                mode: 'cors',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': '*'
-                }
-            });
-            
-            return response;
         },
-        
-        getBestStreak: function () {
-        
-        }
-        
+        days: {
+            deleteHabitDays: async function (apiRequest) {
+                let request = apiRequest;
+                let result = await fetch(`https://localhost:7181/Days/DeleteHabitDays`, {
+                    method: "DELETE",
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    body: JSON.stringify(request),
+                });
+                let parsedResponse = await result.json();
+                return parsedResponse;
+           },
+           resetChecker: async function(num,id){
+                const response =  await fetch(`https://localhost:7181/Days/ResetChecker?dayNumber=${num}&habitId=${id}`, {
+                    method: "GET",
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    }
+                });
+                const result = await response.text();
+                return result;
+           },
+           getStreak: async function(id){
+                const response =  await fetch(`https://localhost:7181/Days/GetBestStreak?habitId=${id}`, {
+                    method: "GET",
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    }
+                });
+                const result = await response.json();
+                return result;
+           },
+           displayDayDescription: async function(num,id){
+                const response =  await fetch(`https://localhost:7181/Days/GetDayByNumber?dayNumber=${num}&habitId=${id}`, {
+                    method: "GET",
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    }
+                });
+
+                if(response.status == 204){
+                    alert("The selected day is not checked.");
+                } else {
+                    const result = await response.json();
+                    return result;
+                }
+            },
+            addDayDescription: async function(apiRequest){
+                let request = apiRequest;
+                let result = await fetch(`https://localhost:7181/Days/AddDayDescription`, {
+                    method: "PUT",
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    body: JSON.stringify(request),
+                });
+                let parsedResponse = await result.json();
+                return parsedResponse;
+            },
+            deleteDay: async function(apiRequest){
+                let request = apiRequest;
+                let result = await fetch(`https://localhost:7181/Days/DeleteDay`, {
+                    method: "DELETE",
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    body: JSON.stringify(request),
+                });
+                let parsedResponse = await result.json();
+                return parsedResponse;
+            },
+            addDay: async function(apiRequest){
+                let request = apiRequest;
+                let result = await fetch(`https://localhost:7181/Days/AddDay`, {
+                    method: "POST",
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    },
+                    body: JSON.stringify(request),
+                });
+                let parsedResponse = await result.json();
+                return parsedResponse;
+            },
+            getAllHabitDays: async function(id){
+                const response =  await fetch(`https://localhost:7181/Days/GetAllHabitDays?habitId=${id}`, {
+                    method: "GET",
+                    mode: 'cors',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Access-Control-Allow-Origin': '*'
+                    }
+                });
+                const result = await response.json();
+                return result;
+            }
+      }
     }
-    */
+
     
