@@ -22,15 +22,29 @@ namespace InstantHabit.Controllers
         [ProducesResponseType(201)]
         public async Task<AddHabitResponse> AddHabit([FromBody] AddHabitRequest request)
         {
-            try
+            var matchChecker = HabitsService.MatchChecker(request.Name, _context);
+
+            if(matchChecker == "No match")
             {
-                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.CreateNewHabit_StoredProcedure {0}", request.Name);
-            } catch(Exception ex)
+                try
+                {
+                    _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.CreateNewHabit_StoredProcedure {0}", request.Name);
+                }
+                catch (Exception ex)
+                {
+                    var response = new AddHabitResponse(false, ex.Message);
+                    return response;
+                }
+                return new AddHabitResponse(true, null);
+            } else if(matchChecker == "Match")
             {
-                var response = new AddHabitResponse(false, ex.Message);
-                return response;
-            }
-            return new AddHabitResponse(true, null);
+                return new AddHabitResponse(false, matchChecker);
+            } 
+            
+           return new AddHabitResponse(false, "Something went wrong");
+            
+            
+            
         }
 
         [HttpGet]
@@ -81,7 +95,7 @@ namespace InstantHabit.Controllers
         public async Task<Habit> GetHabitById([FromQuery] int id)
         {
 
-            return HabitsService.getDayFromDB(_context, id);
+            return HabitsService.getHabitFromDB(_context, id);
                       
         }
 

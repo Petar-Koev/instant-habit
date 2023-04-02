@@ -11,7 +11,7 @@ namespace InstantHabit.Services
             _context = context;
         }
 
-        public static Habit getDayFromDB(InstantHabitContext _context, int habitId)
+        public static Habit getHabitFromDB(InstantHabitContext _context, int habitId)
         {
             var habitsList = _context.Habits.ToList<Habit>();
 
@@ -28,6 +28,29 @@ namespace InstantHabit.Services
 
                               }).FirstOrDefault();
             return linqResult;
+        }
+
+        // Checks for DB habit match
+        public static string MatchChecker(string name, InstantHabitContext _context)
+        {
+            var habits = _context.Habits.ToList<Habit>();
+
+            var checker = "";
+
+            for (int i = 0; i < habits.Count; i++)
+            {
+
+                if (habits[i].Name != name)
+                {
+                    checker = "No match";
+                }
+                else if (habits[i].Name == name)
+                {
+                    checker = "Match";
+                    break;
+                }
+            }
+            return checker;
         }
     }
 }

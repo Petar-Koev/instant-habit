@@ -1,16 +1,10 @@
     async function addHabit(){
         let newHabitName = document.getElementById("new-habit-input").value;
+
         let request = {name: newHabitName};
         let response = await instantHabitApi.habits.addHabit(request);
-        
-        if(response.succeeded == true){
-            await displayHabits();
-        } else {
-            console.log(response);
-        }
 
-        document.getElementById("new-habit-input").value = "";
-        document.getElementById("habit-area").style.display = "none";
+        checkForHabitDuplicates(response);
     }
 
     window.addEventListener('load',displayHabits);
@@ -392,6 +386,21 @@
         }
     }
 
+    
+    async function checkForHabitDuplicates(response){
+        if(response.succeeded == true){
+            await displayHabits();
+        } else if (response.succeeded == false && response.error == "Match"){
+            alert("This habit already exist.")
+        }
+         else {
+            console.log(response);
+        }
+        document.getElementById("habit-area").style.display = "none";
+        document.getElementById("new-habit-input").value = "";
+    }
+    
+
     async function getInfoFromDB(method){
 
         let task;
@@ -600,5 +609,3 @@
             }
       }
     }
-
-    
