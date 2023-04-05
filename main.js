@@ -355,7 +355,7 @@
 
     function refreshDays(){
 
-        for(let i = 1; i <= 30; i++ ){
+        for(let i = 1; i <= 60; i++ ){
             let refresh =  document.getElementById(`day-${i}`);
             refresh.style.color = "white";
         }

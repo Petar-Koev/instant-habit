@@ -1,4 +1,6 @@
 using InstantHabit;
+using InstantHabit.Interfaces;
+using InstantHabit.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +14,9 @@ builder.Services.AddSwaggerGen();
 ConfigurationManager configuration = builder.Configuration;
 builder.Services.AddDbContext<InstantHabitContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("InstantHabitsDB")));
+
+builder.Services.AddTransient<IDaysService,DaysServices>();
+builder.Services.AddTransient<IHabitsService, HabitsServices>();
 
 var app = builder.Build();
 

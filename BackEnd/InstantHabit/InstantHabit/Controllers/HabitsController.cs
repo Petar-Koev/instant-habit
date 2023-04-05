@@ -1,4 +1,5 @@
-﻿using InstantHabit.Models;
+﻿using InstantHabit.Interfaces;
+using InstantHabit.Models;
 using InstantHabit.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -11,10 +12,10 @@ namespace InstantHabit.Controllers
     [Route("[controller]")]
     public class HabitsController : ControllerBase
     {
-        private readonly InstantHabitContext _context;
-        public HabitsController(InstantHabitContext context)
+        private readonly IHabitsService _habitsService;
+        public HabitsController(IHabitsService habitsService)
         {
-            _context = context;
+            _habitsService = habitsService;
         }
 
         [HttpPost]
@@ -22,13 +23,13 @@ namespace InstantHabit.Controllers
         [ProducesResponseType(201)]
         public async Task<AddHabitResponse> AddHabit([FromBody] AddHabitRequest request)
         {
-            var matchChecker = HabitsService.MatchChecker(request.Name, _context);
+            var matchChecker = _habitsService.MatchChecker(request.Name);
 
             if(matchChecker == "No match")
             {
                 try
                 {
-                    _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.CreateNewHabit_StoredProcedure {0}", request.Name);
+                    _habitsService.CreateNewHabit(request);
                 }
                 catch (Exception ex)
                 {
@@ -43,15 +44,13 @@ namespace InstantHabit.Controllers
             
            return new AddHabitResponse(false, "Something went wrong");
             
-            
-            
         }
 
         [HttpGet]
         [Route("GetAllHabits")]
         public  async Task<List<Habit>> GetAllHabits()
         {
-            var habits = _context.Habits.ToList<Habit>();
+            var habits = _habitsService.GetHabitsFromDB();
             return habits;
         }
 
@@ -62,7 +61,7 @@ namespace InstantHabit.Controllers
         {
             try
             {
-                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.DeleteAhabit_StoredProcedure {0}", request.Id);
+                _habitsService.DeleteHabit(request);
             }
             catch (Exception ex)
             {
@@ -79,7 +78,7 @@ namespace InstantHabit.Controllers
         {
             try
             {
-                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.AddDescription_StoredProcedure {0}, {1}", request.HabitId, request.Description);
+                _habitsService.AddHabitDescription(request);
             }
                 catch (Exception ex)
             {
@@ -95,7 +94,7 @@ namespace InstantHabit.Controllers
         public async Task<Habit> GetHabitById([FromQuery] int id)
         {
 
-            return HabitsService.getHabitFromDB(_context, id);
+            return _habitsService.GetHabitFromDB(id);
                       
         }
 
@@ -106,7 +105,7 @@ namespace InstantHabit.Controllers
         {
             try
             {
-                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.SetIsExtended_StoredProcedure {0}", request.HabitId);
+                _habitsService.SetIsExtended(request);
             }
             catch (Exception ex)
             {

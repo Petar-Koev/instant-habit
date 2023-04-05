@@ -1,4 +1,5 @@
-﻿using InstantHabit.Models;
+﻿using InstantHabit.Interfaces;
+using InstantHabit.Models;
 using InstantHabit.Services;
 using Microsoft.AspNetCore.Http.Metadata;
 using Microsoft.AspNetCore.Mvc;
@@ -8,21 +9,21 @@ using System.Text.Json;
 
 namespace InstantHabit.Controllers
 {
-        [ApiController]
-        [Route("[controller]")]
-        public class DaysController : ControllerBase
+    [ApiController]
+    [Route("[controller]")]
+     public class DaysController : ControllerBase
+     {
+        private readonly IDaysService _daysService;
+        public DaysController(IDaysService daysService)
         {
-            private readonly InstantHabitContext _context;
-            public DaysController(InstantHabitContext context)
-            {
-                _context = context;
-            }
+                _daysService = daysService;
+        }
 
         [HttpGet]
         [Route("GetAllHabitDays")]
         public async Task<List<Day>> GetAllHabitDays([FromQuery] int habitId)
         {
-            var result = DaysServices.getDaysFromDB(_context,habitId);
+            var result = _daysService.GetDaysFromDB(habitId);
 
             return result;
         }
@@ -32,13 +33,13 @@ namespace InstantHabit.Controllers
         [ProducesResponseType(201)]
         public async Task<AddDayResponse> AddDay([FromBody] AddDayRequest request)
         {
-            var checkForMatch = DaysServices.MatchChecker(request.HabitId, request.DayNumber, _context);
+            var checkForMatch = _daysService.MatchChecker(request.HabitId, request.DayNumber);
 
             if(checkForMatch == "No match")
             {
                 try
                 {
-                    _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.AddNewDay_StoredProcedure {0}, {1}", request.HabitId, request.DayNumber);
+                    _daysService.AddNewDay(request);
                 }
                 catch (Exception ex)
                 {
@@ -62,7 +63,7 @@ namespace InstantHabit.Controllers
         {
             try
             {
-                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.DeleteDay_StoredProcedure {0}, {1}", request.HabitId, request.DayNumber);
+                _daysService.DeleteSelectedDay(request);
             }
             catch (Exception ex)
             {
@@ -79,9 +80,7 @@ namespace InstantHabit.Controllers
         {
             try
             {
-                _context.Database.ExecuteSqlRaw
-                ("EXECUTE InstantHabit.AddDayDescription_StoredProcedure {0}, {1}, {2}", request.HabitId, request.DayNumber, request.Description);
-
+                _daysService.AddDailyDescription(request);
             }
             catch (Exception ex)
             {
@@ -95,14 +94,14 @@ namespace InstantHabit.Controllers
         [Route("GetDayByNumber")]
         public async Task<Day> GetDayByNumber([FromQuery] int dayNumber, int habitId)
         {
-            return DaysServices.getDayFromDB(_context,habitId, dayNumber);
+            return _daysService.GetDayFromDB(habitId, dayNumber);
         }
 
         [HttpGet]
         [Route("GetBestStreak")]
         public async Task<BestStreakResponse> GetBestStreak([FromQuery]  int habitId)
         {
-            var result = DaysServices.GetStreakMessage(_context,habitId);
+            var result = _daysService.GetStreakMessage(habitId);
 
             return result;
            
@@ -112,7 +111,7 @@ namespace InstantHabit.Controllers
         [Route("ResetChecker")]
         public async Task<string> ResetChecker([FromQuery] int dayNumber, int habitId)
         {
-            var confirmation = DaysServices.DaysListResetChecker(dayNumber, habitId, _context);
+            var confirmation = _daysService.DaysListResetChecker(dayNumber, habitId);
 
             return confirmation ;
         }
@@ -122,9 +121,10 @@ namespace InstantHabit.Controllers
         [ProducesResponseType(201)]
         public async Task<DeleteHabitDaysResponse> DeleteHabitDays([FromBody] DeleteHabitDaysRequest request)
         {
+            
             try
             {
-                _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.DeleteDays_StoredProcedure {0}", request.HabitId);
+                _daysService.DeleteDays(request);
             }
             catch (Exception ex)
             {
@@ -132,6 +132,7 @@ namespace InstantHabit.Controllers
                 return response;
             }
             return new DeleteHabitDaysResponse(true, null);
+            
         }
 
     }
