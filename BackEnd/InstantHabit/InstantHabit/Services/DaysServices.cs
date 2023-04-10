@@ -9,34 +9,23 @@ namespace InstantHabit.Services
 {
     public class DaysServices : IDaysService
     {
-        private readonly InstantHabitContext _context;
-        public DaysServices(InstantHabitContext context)
+        private readonly IDaysRepository _daysRepository;
+        public DaysServices(IDaysRepository daysRepository)
         {
-            _context = context;
+            _daysRepository = daysRepository;
         }
 
         // Gets days for a specific habit
         public List<Day> GetDaysFromDB(int habitId)
         {
-            var days = _context.Days.ToList<Day>();
-            var result = (from day in days
-                          where day.HabitId == habitId
-                          select day).ToList();
-            return result;
+            return _daysRepository.GetAllDays(habitId);
         }
 
         // Gets a specific day
-        public Day GetDayFromDB( int habitId, int num)
+        public Day GetDayFromDB(int habitId, int num)
         {
-            var days = _context.Days.ToList<Day>();
-
-            var linqResult = (from day in days
-                              where day.HabitId == habitId && day.DayNumber == num
-                              select day).FirstOrDefault();
-
-            return linqResult;
+            return _daysRepository.GetDay(habitId,num);
         }
-
 
         // Checks for grid extensions / days reset.
         public string DaysListResetChecker(int num, int habitId )
@@ -87,14 +76,12 @@ namespace InstantHabit.Services
             }
             return checker;
         }
-
-
         public List<int> CalculateBestStreak(int habitId)
         {
             var days = GetDaysFromDB(habitId);
             var numbers = new List<int>();
 
-            foreach (var day in days) { numbers.Add(day.DayNumber); };
+            foreach (var day in days) {numbers.Add(day.DayNumber); };
             numbers.Sort();
 
             var bestStreak = 1;
@@ -130,7 +117,6 @@ namespace InstantHabit.Services
             }
             return bestStreakList;
         }
-
         private string CalculateMessage(int bestStreak)
         {
             string msg;
@@ -165,28 +151,23 @@ namespace InstantHabit.Services
             }
             return msg;
         }
-
         public void DeleteDays(DeleteHabitDaysRequest request)
         {
-            _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.DeleteDays_StoredProcedure {0}", request.HabitId);
+            _daysRepository.DeleteDays(request.HabitId);
         }
-
         public void AddDailyDescription(AddDayDescriptionRequest request)
         {
-            _context.Database.ExecuteSqlRaw
-                ("EXECUTE InstantHabit.AddDayDescription_StoredProcedure {0}, {1}, {2}", request.HabitId, request.DayNumber, request.Description);
+            _daysRepository.AddDailyDescription(request.HabitId, request.DayNumber, request.Description);
         }
-
         public void DeleteSelectedDay(DeleteDayRequest request)
         {
-            _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.DeleteDay_StoredProcedure {0}, {1}", request.HabitId, request.DayNumber);
+            _daysRepository.DeleteSelectedDay(request.HabitId, request.DayNumber);
         }
 
         public void AddNewDay(AddDayRequest request)
         {
-            _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.AddNewDay_StoredProcedure {0}, {1}", request.HabitId, request.DayNumber);
+            _daysRepository.AddNewDay(request.HabitId, request.DayNumber);
         }
-
         public BestStreakResponse GetStreakMessage(int habitId)
         {
             var bestStreakInfo = CalculateBestStreak(habitId);

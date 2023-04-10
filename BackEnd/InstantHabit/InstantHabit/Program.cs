@@ -1,5 +1,6 @@
 using InstantHabit;
 using InstantHabit.Interfaces;
+using InstantHabit.Repositories;
 using InstantHabit.Services;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,6 +18,8 @@ builder.Services.AddDbContext<InstantHabitContext>(options =>
 
 builder.Services.AddTransient<IDaysService,DaysServices>();
 builder.Services.AddTransient<IHabitsService, HabitsServices>();
+builder.Services.AddTransient<IHabitsRepository, HabitsRepository>();
+builder.Services.AddTransient<IDaysRepository, DaysRepository>();
 
 var app = builder.Build();
 

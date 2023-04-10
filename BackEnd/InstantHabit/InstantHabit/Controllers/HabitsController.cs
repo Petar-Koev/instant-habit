@@ -1,5 +1,6 @@
 ﻿using InstantHabit.Interfaces;
 using InstantHabit.Models;
+using InstantHabit.Repositories;
 using InstantHabit.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -12,11 +13,13 @@ namespace InstantHabit.Controllers
     [Route("[controller]")]
     public class HabitsController : ControllerBase
     {
+        
         private readonly IHabitsService _habitsService;
         public HabitsController(IHabitsService habitsService)
         {
             _habitsService = habitsService;
         }
+        
 
         [HttpPost]
         [Route("AddHabit")]
@@ -30,13 +33,14 @@ namespace InstantHabit.Controllers
                 try
                 {
                     _habitsService.CreateNewHabit(request);
+                    return new AddHabitResponse(true, null);
                 }
                 catch (Exception ex)
                 {
                     var response = new AddHabitResponse(false, ex.Message);
                     return response;
                 }
-                return new AddHabitResponse(true, null);
+                
             } else if(matchChecker == "Match")
             {
                 return new AddHabitResponse(false, matchChecker);
