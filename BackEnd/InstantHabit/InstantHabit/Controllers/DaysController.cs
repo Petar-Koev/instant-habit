@@ -23,9 +23,15 @@ namespace InstantHabit.Controllers
         [Route("GetAllHabitDays")]
         public async Task<List<Day>> GetAllHabitDays([FromQuery] int habitId)
         {
-            var result = _daysService.GetDaysFromDB(habitId);
+            try
+            {
+                var result = _daysService.GetDaysFromDB(habitId);
+                return result;
+            } catch (Exception)
+            {
+                return new List<Day>();
+            }
 
-            return result;
         }
 
         [HttpPost]
@@ -40,20 +46,15 @@ namespace InstantHabit.Controllers
                 try
                 {
                     _daysService.AddNewDay(request);
+                    return new AddDayResponse(true, null);
                 }
                 catch (Exception ex)
                 {
-
                     var response = new AddDayResponse(false, ex.Message);
                     return response;
                 }
-                return new AddDayResponse(true, null);
-            } else if(checkForMatch == "Match")
-            {
-                return new AddDayResponse(false, checkForMatch);
-            }
-            return new AddDayResponse(false, "something went wrong");
-            
+            } 
+            return new AddDayResponse(false, checkForMatch);  
         }
 
         [HttpDelete]
@@ -94,26 +95,44 @@ namespace InstantHabit.Controllers
         [Route("GetDayByNumber")]
         public async Task<Day> GetDayByNumber([FromQuery] int dayNumber, int habitId)
         {
-            return _daysService.GetDayFromDB(habitId, dayNumber);
+            try
+            {
+                return _daysService.GetDayFromDB(habitId, dayNumber);
+            }
+            catch (Exception)
+            {
+                return new Day();
+            }
+            
         }
 
         [HttpGet]
         [Route("GetBestStreak")]
         public async Task<BestStreakResponse> GetBestStreak([FromQuery]  int habitId)
         {
-            var result = _daysService.GetStreakMessage(habitId);
-
-            return result;
-           
+            try
+            {
+                var result = _daysService.GetStreakMessage(habitId);
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return new BestStreakResponse(succeeded:false,error: ex.Message);
+            }
         }
         
         [HttpGet]
         [Route("ResetChecker")]
         public async Task<string> ResetChecker([FromQuery] int dayNumber, int habitId)
         {
-            var confirmation = _daysService.DaysListResetChecker(dayNumber, habitId);
-
-            return confirmation ;
+            try
+            {
+                var confirmation = _daysService.DaysListResetChecker(dayNumber, habitId);
+                return confirmation;
+            }catch (Exception ex)
+            {
+                return ex.Message;
+            }
         }
 
         [HttpDelete]
@@ -125,15 +144,13 @@ namespace InstantHabit.Controllers
             try
             {
                 _daysService.DeleteDays(request);
+                return new DeleteHabitDaysResponse(true, null);
             }
             catch (Exception ex)
             {
                 var response = new DeleteHabitDaysResponse(false, ex.Message);
                 return response;
-            }
-            return new DeleteHabitDaysResponse(true, null);
-            
+            } 
         }
-
     }
 }

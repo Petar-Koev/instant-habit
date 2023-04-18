@@ -23,7 +23,6 @@ namespace InstantHabit.Controllers
 
         [HttpPost]
         [Route("AddHabit")]
-        [ProducesResponseType(201)]
         public async Task<AddHabitResponse> AddHabit([FromBody] AddHabitRequest request)
         {
             var matchChecker = _habitsService.MatchChecker(request.Name);
@@ -40,22 +39,23 @@ namespace InstantHabit.Controllers
                     var response = new AddHabitResponse(false, ex.Message);
                     return response;
                 }
-                
-            } else if(matchChecker == "Match")
-            {
-                return new AddHabitResponse(false, matchChecker);
             } 
-            
-           return new AddHabitResponse(false, "Something went wrong");
-            
+            return new AddHabitResponse(false, matchChecker);
         }
 
         [HttpGet]
         [Route("GetAllHabits")]
         public  async Task<List<Habit>> GetAllHabits()
         {
-            var habits = _habitsService.GetHabitsFromDB();
-            return habits;
+            try
+            {
+                var habits = _habitsService.GetHabitsFromDB();
+                return habits;
+            }
+            catch (Exception)
+            {
+                return new List<Habit>();
+            }
         }
 
         [HttpDelete]
@@ -66,13 +66,13 @@ namespace InstantHabit.Controllers
             try
             {
                 _habitsService.DeleteHabit(request);
+                return new DeleteAhabitResponse(true, null);
             }
             catch (Exception ex)
             {
                 var response = new DeleteAhabitResponse(false, ex.Message);
                 return response;
             }
-            return new DeleteAhabitResponse(true, null);
         }
 
         [HttpPut]
@@ -83,23 +83,27 @@ namespace InstantHabit.Controllers
             try
             {
                 _habitsService.AddHabitDescription(request);
+                return new AddDescriptionResponse(true, null);
             }
                 catch (Exception ex)
             {
                 var response = new AddDescriptionResponse(false, ex.Message);
-
                 return response;
             }
-            return new AddDescriptionResponse(true, null);
         }
 
         [HttpGet]
         [Route("GetHabitById")]
         public async Task<Habit> GetHabitById([FromQuery] int id)
         {
-
-            return _habitsService.GetHabitFromDB(id);
-                      
+            try
+            {
+                return _habitsService.GetHabitFromDB(id);
+            }
+            catch (Exception)
+            {
+                return new Habit();
+            }
         }
 
         [HttpPut]
@@ -109,7 +113,12 @@ namespace InstantHabit.Controllers
         {
             try
             {
+                if(request == null)
+                {
+                    return new ExtendHabitResponse(false, "Request is null");
+                }
                 _habitsService.SetIsExtended(request);
+                return new ExtendHabitResponse(true, null);
             }
             catch (Exception ex)
             {
@@ -117,8 +126,11 @@ namespace InstantHabit.Controllers
 
                 return response;
             }
-            return new ExtendHabitResponse(true, null);
+            
         }
+
+
+        
 
     }
 }

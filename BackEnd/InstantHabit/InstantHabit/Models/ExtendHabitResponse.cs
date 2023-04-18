@@ -1,14 +1,9 @@
 ﻿namespace InstantHabit.Models
 {
-    public class ExtendHabitResponse
+    public class ExtendHabitResponse : GlobalResponse
     {
-            public bool Succeeded { get; set; }
-            public string Error { get; set; }
-
-            public ExtendHabitResponse(bool succeeded, string error)
+            public ExtendHabitResponse(bool succeeded, string error) : base(succeeded, error)   
             {
-                Succeeded = succeeded;
-                Error = error;
             }
         
     }

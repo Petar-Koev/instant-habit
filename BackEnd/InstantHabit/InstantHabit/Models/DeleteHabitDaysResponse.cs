@@ -1,14 +1,9 @@
 ﻿namespace InstantHabit.Models
 {
-    public class DeleteHabitDaysResponse
+    public class DeleteHabitDaysResponse : GlobalResponse
     {
-        public bool Succeeded { get; set; }
-        public string Error { get; set; }
-
-        public DeleteHabitDaysResponse(bool succeeded, string error)
+        public DeleteHabitDaysResponse(bool succeeded, string error) : base(succeeded, error)
         {
-            Succeeded = succeeded;
-            Error = error;
         }
     }
 }

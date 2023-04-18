@@ -1,14 +1,7 @@
 ﻿namespace InstantHabit.Models
 {
-    public class AddDayResponse
+    public class AddDayResponse : GlobalResponse
     {
-        public bool Succeeded { get; set; }
-        public string Error { get; set; }
-
-        public AddDayResponse(bool succeeded, string error)
-        {
-            Succeeded = succeeded;
-            Error = error;
-        }
+        public AddDayResponse(bool succeeded, string error) : base(succeeded, error) { }
     }
 }
