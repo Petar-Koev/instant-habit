@@ -172,12 +172,14 @@ namespace InstantHabit.Services
         {
             var bestStreakInfo = CalculateBestStreak(habitId);
             var msg = CalculateMessage(bestStreakInfo.Max());
-           
-            var result = new BestStreakResponse
+
+            var result = new BestStreakResponse(bestStreakInfo.Max(), msg, true, null);
+            /*
             {
                 BestStreak = bestStreakInfo.Max(),
                 MotivationalMessage = msg
             };
+            */
 
             return result;
         }

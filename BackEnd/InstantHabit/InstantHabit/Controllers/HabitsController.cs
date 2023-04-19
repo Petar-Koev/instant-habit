@@ -13,21 +13,24 @@ namespace InstantHabit.Controllers
     [Route("[controller]")]
     public class HabitsController : ControllerBase
     {
-        
         private readonly IHabitsService _habitsService;
         public HabitsController(IHabitsService habitsService)
         {
             _habitsService = habitsService;
         }
         
-
         [HttpPost]
         [Route("AddHabit")]
         public async Task<AddHabitResponse> AddHabit([FromBody] AddHabitRequest request)
         {
-            var matchChecker = _habitsService.MatchChecker(request.Name);
+           
+            if (request == null)
+            {
+                return new AddHabitResponse(false, "Request is null.");
+            }
+                var matchChecker = _habitsService.MatchChecker(request.Name);
 
-            if(matchChecker == "No match")
+            if (matchChecker == "No match")
             {
                 try
                 {
@@ -45,16 +48,16 @@ namespace InstantHabit.Controllers
 
         [HttpGet]
         [Route("GetAllHabits")]
-        public  async Task<List<Habit>> GetAllHabits()
+        public  async Task<GetAllHabitsResponse> GetAllHabits()
         {
             try
             {
                 var habits = _habitsService.GetHabitsFromDB();
-                return habits;
+                return new GetAllHabitsResponse(habits, true, null);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return new List<Habit>();
+                return new GetAllHabitsResponse(false, ex.Message);
             }
         }
 
@@ -65,6 +68,10 @@ namespace InstantHabit.Controllers
         {
             try
             {
+                if (request == null)
+                {
+                    return new DeleteAhabitResponse(false, "Request is null.");
+                }
                 _habitsService.DeleteHabit(request);
                 return new DeleteAhabitResponse(true, null);
             }
@@ -82,6 +89,10 @@ namespace InstantHabit.Controllers
         {
             try
             {
+                if (request == null)
+                {
+                    return new AddDescriptionResponse(false, "Request is null.");
+                }
                 _habitsService.AddHabitDescription(request);
                 return new AddDescriptionResponse(true, null);
             }
@@ -94,15 +105,20 @@ namespace InstantHabit.Controllers
 
         [HttpGet]
         [Route("GetHabitById")]
-        public async Task<Habit> GetHabitById([FromQuery] int id)
+        public async Task<GetHabitByIdResponse> GetHabitById([FromQuery] int id)
         {
             try
             {
-                return _habitsService.GetHabitFromDB(id);
+                var habit = _habitsService.GetHabitFromDB(id);
+                if(habit == null)
+                {
+                    throw new Exception("Habit does not exist");
+                }
+                return new GetHabitByIdResponse(habit, true, null);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return new Habit();
+                return new GetHabitByIdResponse(false, ex.Message);
             }
         }
 
@@ -115,7 +131,7 @@ namespace InstantHabit.Controllers
             {
                 if(request == null)
                 {
-                    return new ExtendHabitResponse(false, "Request is null");
+                    return new ExtendHabitResponse(false, "Request is null.");
                 }
                 _habitsService.SetIsExtended(request);
                 return new ExtendHabitResponse(true, null);

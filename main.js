@@ -12,7 +12,11 @@
     async function GetAllHabits(){
 
         let response = await instantHabitApi.habits.getAllHabits();
-        return response;
+
+        if(response.succeeded == false){
+            return response.error;
+        }
+        return response.habits;
     }
 
     async function displayHabits(){
@@ -171,7 +175,10 @@
         let habitId = document.getElementById("opened-habit-id").value;
         let response = await instantHabitApi.habits.getHabitById(habitId);
 
-        return response;
+        if(response.succeeded == false){
+            return response.error;
+        }
+        return response.habits;
     }
 
     async function getDescription(){
