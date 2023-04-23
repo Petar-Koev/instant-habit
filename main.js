@@ -12,16 +12,21 @@
     async function GetAllHabits(){
 
         let response = await instantHabitApi.habits.getAllHabits();
+        console.log(response);
 
         if(response.succeeded == false){
-            return response.error;
+          //  return response.error;
+            alert("Something went wrong");
         }
+        console.log(response.habits);
+
         return response.habits;
     }
 
     async function displayHabits(){
 
         let allHabits = await getInfoFromDB(GetAllHabits());
+        console.log(allHabits);
         let habitsStructure = await createHabits(allHabits);
 
         if(allHabits.length === 0) {
@@ -77,6 +82,8 @@
     async function openHabit(value){
 
         let values = splitValues(value);
+        console.log(value);
+        console.log(values);
         
         document.getElementById("opened-habit-id").value = values.id;
         document.getElementById("habit-name-h2").innerHTML = values.text;
@@ -98,6 +105,7 @@
         let habitToDelete = document.getElementById(`habit-${e.target.value}`);
 
         let allHabits = await getInfoFromDB(GetAllHabits());
+        console.log(allHabits);
 
         for(let i = 0; i < allHabits.length; i++){
             if(allHabits[i].id == e.target.value){
@@ -106,6 +114,12 @@
             habitArea.style.display = "none";
             }
         }
+
+        console.log(allHabits.length);
+
+         if(allHabits.length == 1){
+            document.getElementById("habits-name-h2").innerHTML = "";
+         }
     }
 
     async function setListenersForOpenBtns(){
@@ -113,8 +127,11 @@
 
         for(let i = 0; i < openBtns.length; i++){
             openBtns[i].addEventListener("click", async function(e){
-            await displayDays();
+                console.log(openBtns[i].value);
             await openHabit(openBtns[i].value);
+            await displayDays();
+            
+            
             });
         }
     }
@@ -176,14 +193,19 @@
         let response = await instantHabitApi.habits.getHabitById(habitId);
 
         if(response.succeeded == false){
-            return response.error;
+            alert("Something went wrong");
+            console.log(response.error);
+            //return null;
         }
-        return response.habits;
+        console.log(response);
+
+        return response.habit;
     }
 
     async function getDescription(){
 
         let selectedHabit = await getInfoFromDB(getHabitById());
+        console.log(selectedHabit.habit);
 
         document.getElementById("description-text").innerHTML = selectedHabit.description;
     }
@@ -191,15 +213,23 @@
     async function getAllHabitDays(){
 
         let habitId = document.getElementById("opened-habit-id").value;
+        console.log(habitId);
         let response = await instantHabitApi.days.getAllHabitDays(habitId);
 
-        return  response;
+        if(response.succeeded == false){
+            console.log(response.error);
+            return null;
+        }
+        console.log(response.days);
+        return  response.days;
+        
     }
 
     async function displayDays(){
 
         refreshDays();
         let days = await getInfoFromDB(getAllHabitDays());
+        console.log(days);
 
         for (let i = 0; i < days.length; i++){
             let probe = document.getElementById(`day-${days[i].dayNumber}`);
@@ -288,6 +318,8 @@
         
         if(confirmAction){
             document.getElementById("daily-notes").style.display = "block";
+        } else {
+            document.getElementById("daily-notes").style.display = "none";
         }
     }
  
@@ -299,11 +331,15 @@
         parseInt(dayNumber);
 
         let result = await instantHabitApi.days.displayDayDescription(dayNumber,habitId);
+        console.log(result);
+        console.log(result.day);
 
-            if(result.note == null){
-                alert("No description found.")
+            if(result.day == null){
+                alert("This day is NOT checked.");
+            } else if(result.day.note == null){
+                alert("No description found.");
             } else {
-                document.getElementById("daily-description-text").innerHTML = result.note;
+                document.getElementById("daily-description-text").innerHTML = result.day.note;
                 document.getElementById("daily-description-text").style.display = "block";
         }
     }
@@ -553,12 +589,13 @@
                     }
                 });
 
+                /*
                 if(response.status == 204){
                     alert("The selected day is not checked.");
-                } else {
+                } else { */
                     const result = await response.json();
                     return result;
-                }
+                //}
             },
             addDayDescription: async function(apiRequest){
                 let request = apiRequest;
@@ -603,6 +640,7 @@
                 return parsedResponse;
             },
             getAllHabitDays: async function(id){
+                console.log(id);
                 const response =  await fetch(`https://localhost:7181/Days/GetAllHabitDays?habitId=${id}`, {
                     method: "GET",
                     mode: 'cors',
@@ -611,7 +649,9 @@
                         'Access-Control-Allow-Origin': '*'
                     }
                 });
+                console.log(response);
                 const result = await response.json();
+                console.log(result);
                 return result;
             }
       }

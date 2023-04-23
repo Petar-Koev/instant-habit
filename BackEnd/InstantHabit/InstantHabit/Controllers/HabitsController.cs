@@ -23,7 +23,6 @@ namespace InstantHabit.Controllers
         [Route("AddHabit")]
         public async Task<AddHabitResponse> AddHabit([FromBody] AddHabitRequest request)
         {
-           
             if (request == null)
             {
                 return new AddHabitResponse(false, "Request is null.");
@@ -144,9 +143,5 @@ namespace InstantHabit.Controllers
             }
             
         }
-
-
-        
-
     }
 }

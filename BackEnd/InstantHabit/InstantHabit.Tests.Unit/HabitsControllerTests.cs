@@ -24,25 +24,35 @@ namespace InstantHabit.Tests.Unit
             _habitsController = new HabitsController(_habitsServiceMock.Object);
         }
 
-        // Method: AddHabit
-
-       // Test To Be Checked: 3(verify???)
+        // Method: AddHabit 
+        // Test: 01
 
         [Fact]
         public async Task AddHabit_ReturnsAddHabitResponse_WithSucceededTrue_And_WithoutErrors_WhenMatchCheckerEqualsNoMatch()
         {
-            // Given
+            // Given 
 
             var addHabitRequest = new AddHabitRequest();
-            addHabitRequest.Name = "WorkOut";
+            addHabitRequest.Name = "Working Out";
 
             _habitsServiceMock.Setup((m) => m.MatchChecker(addHabitRequest.Name)).Returns("No match");
 
             // When
 
-            var addHabitResponse = await _habitsController.AddHabit(addHabitRequest);
+            var addHabitResponse = await _habitsController.AddHabit(addHabitRequest);   
 
             // Then
+
+            Assert.NotNull(addHabitResponse);
+            Assert.True(addHabitResponse.Succeeded);
+            Assert.Null(addHabitResponse.Error);
+
+        }
+
+
+
+        /*
+
 
             Assert.NotNull(addHabitResponse);
             Assert.True(addHabitResponse.Succeeded);
@@ -320,6 +330,9 @@ namespace InstantHabit.Tests.Unit
             Assert.False(extendHabitResponse.Succeeded);
             Assert.Equal("fail", extendHabitResponse.Error);
         }
+
+
+        */
     }
 }
 

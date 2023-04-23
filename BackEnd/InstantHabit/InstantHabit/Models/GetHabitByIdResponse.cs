@@ -4,9 +4,9 @@
     {
         public Habit Habit { get; set; }
 
-        public GetHabitByIdResponse(Habit habits, bool succeeded, string error) : base(succeeded, error)
+        public GetHabitByIdResponse(Habit habit, bool succeeded, string error) : base(succeeded, error)
         {
-            Habit = habits;
+            Habit = habit;
         }
 
         public GetHabitByIdResponse(bool succeeded, string error) : base(succeeded, error)

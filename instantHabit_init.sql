@@ -34,13 +34,6 @@ CREATE TABLE [InstantHabit].[Habits] (
 );
 GO
 
-INSERT INTO [InstantHabit].[Habits] (Name, Description)
-VALUES
-     ('WorkingOut','Daily Excercise Routine'),
-	 ('Swimming', NULL ),
-	 ('Sleep', 'Try to sleep 7h+ a day'),
-	 ('Music','Practice arpeggios and Pentatonic Scales');
-GO
 
 CREATE TABLE [InstantHabit].[Days] (
     [Id] int identity(1,1) NOT NULL,
@@ -55,13 +48,6 @@ CREATE TABLE [InstantHabit].[Days] (
 );
 GO
 
-INSERT INTO [InstantHabit].[Days] (HabitId, DayNumber, Note)
-VALUES
-     (1,3,'My muscles hurt a lot, damn'),
-	 (2,4,'I almost drowned today' ),
-	 (3,2,NULL),
-	 (4,5,'A7X - Afterlife Solo[Done]');
-GO
 
 -- Declare Stored Procedures
 SET ANSI_NULLS ON
