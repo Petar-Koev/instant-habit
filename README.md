@@ -55,6 +55,13 @@ _InstantHabit_ allows users to add and manage habits, with each habit displaying
 ## Screenshots
 
 ![This is a alt text.](/Screenshots-readme/(1)habit-input-field.jpg)
+![This is a alt text.](/Screenshots-readme/(2)displayed-habits.jpg)
+![This is a alt text.](/Screenshots-readme/(3)displayed-habits.jpg)
+![This is a alt text.](/Screenshots-readme/(4)habit-descrription.jpg)
+![This is a alt text.](/Screenshots-readme/(5)habit-grid-streak-checked-days.jpg)
+![This is a alt text.](/Screenshots-readme/(6)day-description.jpg)
+![This is a alt text.](/Screenshots-readme/(7)display-description.jpg)
+![This is a alt text.](/Screenshots-readme/(8)second-grid.jpg)
 
 
 ## Ideas for future development
