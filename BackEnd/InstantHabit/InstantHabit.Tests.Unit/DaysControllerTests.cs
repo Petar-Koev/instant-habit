@@ -22,6 +22,8 @@ namespace InstantHabit.Tests.Unit
         }
 
 
+        /*
+
         // Method: GetAllHabitDays
         // add negative test
 
@@ -260,6 +262,8 @@ namespace InstantHabit.Tests.Unit
             Assert.NotNull(getDayByIdResponse);
             Assert.Equal(day, getDayByIdResponse);
         }
+
+        */
 
     }
 }

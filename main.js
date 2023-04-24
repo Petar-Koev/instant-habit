@@ -12,13 +12,12 @@
     async function GetAllHabits(){
 
         let response = await instantHabitApi.habits.getAllHabits();
-        console.log(response);
 
         if(response.succeeded == false){
-          //  return response.error;
+          
             alert("Something went wrong");
+            return;
         }
-        console.log(response.habits);
 
         return response.habits;
     }
@@ -26,7 +25,6 @@
     async function displayHabits(){
 
         let allHabits = await getInfoFromDB(GetAllHabits());
-        console.log(allHabits);
         let habitsStructure = await createHabits(allHabits);
 
         if(allHabits.length === 0) {
@@ -82,8 +80,6 @@
     async function openHabit(value){
 
         let values = splitValues(value);
-        console.log(value);
-        console.log(values);
         
         document.getElementById("opened-habit-id").value = values.id;
         document.getElementById("habit-name-h2").innerHTML = values.text;
@@ -105,7 +101,6 @@
         let habitToDelete = document.getElementById(`habit-${e.target.value}`);
 
         let allHabits = await getInfoFromDB(GetAllHabits());
-        console.log(allHabits);
 
         for(let i = 0; i < allHabits.length; i++){
             if(allHabits[i].id == e.target.value){
@@ -114,8 +109,6 @@
             habitArea.style.display = "none";
             }
         }
-
-        console.log(allHabits.length);
 
          if(allHabits.length == 1){
             document.getElementById("habits-name-h2").innerHTML = "";
@@ -127,11 +120,8 @@
 
         for(let i = 0; i < openBtns.length; i++){
             openBtns[i].addEventListener("click", async function(e){
-                console.log(openBtns[i].value);
             await openHabit(openBtns[i].value);
             await displayDays();
-            
-            
             });
         }
     }
@@ -194,10 +184,8 @@
 
         if(response.succeeded == false){
             alert("Something went wrong");
-            console.log(response.error);
-            //return null;
+            return;
         }
-        console.log(response);
 
         return response.habit;
     }
@@ -213,14 +201,12 @@
     async function getAllHabitDays(){
 
         let habitId = document.getElementById("opened-habit-id").value;
-        console.log(habitId);
         let response = await instantHabitApi.days.getAllHabitDays(habitId);
 
         if(response.succeeded == false){
-            console.log(response.error);
-            return null;
+            alert("Something went wrong");
+            return;
         }
-        console.log(response.days);
         return  response.days;
         
     }
@@ -229,7 +215,6 @@
 
         refreshDays();
         let days = await getInfoFromDB(getAllHabitDays());
-        console.log(days);
 
         for (let i = 0; i < days.length; i++){
             let probe = document.getElementById(`day-${days[i].dayNumber}`);
@@ -331,8 +316,6 @@
         parseInt(dayNumber);
 
         let result = await instantHabitApi.days.displayDayDescription(dayNumber,habitId);
-        console.log(result);
-        console.log(result.day);
 
             if(result.day == null){
                 alert("This day is NOT checked.");

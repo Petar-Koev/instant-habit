@@ -39,26 +39,26 @@ namespace InstantHabit.Controllers
         [ProducesResponseType(201)]
         public async Task<AddDayResponse> AddDay([FromBody] AddDayRequest request)
         {
-            if (request == null)
+            try
             {
-                return new AddDayResponse(false, "Request is null.");
-            }
-            var checkForMatch = _daysService.MatchChecker(request.HabitId, request.DayNumber);
+                if (request == null)
+                {
+                    return new AddDayResponse(false, "Request is null.");
+                }
+                var checkForMatch = _daysService.MatchChecker(request.HabitId, request.DayNumber);
 
-            if(checkForMatch == "No match")
-            {
-                try
+                if (checkForMatch == "No match")
                 {
                     _daysService.AddNewDay(request);
                     return new AddDayResponse(true, null);
                 }
-                catch (Exception ex)
-                {
-                    var response = new AddDayResponse(false, ex.Message);
-                    return response;
-                }
+                return new AddDayResponse(false, checkForMatch);
+            }
+            catch (Exception ex)
+            {
+                var response = new AddDayResponse(false, ex.Message);
+                return response;
             } 
-            return new AddDayResponse(false, checkForMatch);  
         }
 
         [HttpDelete]
@@ -120,7 +120,6 @@ namespace InstantHabit.Controllers
             {
                 return new GetDayByNumberResponse(false, ex.Message);
             }
-            
         }
 
         [HttpGet]

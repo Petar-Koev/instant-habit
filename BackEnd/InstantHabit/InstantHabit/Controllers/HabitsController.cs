@@ -18,36 +18,36 @@ namespace InstantHabit.Controllers
         {
             _habitsService = habitsService;
         }
-        
+
         [HttpPost]
         [Route("AddHabit")]
         public async Task<AddHabitResponse> AddHabit([FromBody] AddHabitRequest request)
         {
-            if (request == null)
+            try
             {
-                return new AddHabitResponse(false, "Request is null.");
-            }
+                if (request == null)
+                {
+                    return new AddHabitResponse(false, "Request is null.");
+                }
                 var matchChecker = _habitsService.MatchChecker(request.Name);
 
-            if (matchChecker == "No match")
-            {
-                try
+                if (matchChecker == "No match")
                 {
                     _habitsService.CreateNewHabit(request);
                     return new AddHabitResponse(true, null);
                 }
-                catch (Exception ex)
-                {
-                    var response = new AddHabitResponse(false, ex.Message);
-                    return response;
-                }
-            } 
-            return new AddHabitResponse(false, matchChecker);
+                return new AddHabitResponse(false, matchChecker);
+            }
+            catch (Exception ex)
+            {
+                var response = new AddHabitResponse(false, ex.Message);
+                return response;
+            }
         }
 
         [HttpGet]
         [Route("GetAllHabits")]
-        public  async Task<GetAllHabitsResponse> GetAllHabits()
+        public async Task<GetAllHabitsResponse> GetAllHabits()
         {
             try
             {
@@ -95,7 +95,7 @@ namespace InstantHabit.Controllers
                 _habitsService.AddHabitDescription(request);
                 return new AddDescriptionResponse(true, null);
             }
-                catch (Exception ex)
+            catch (Exception ex)
             {
                 var response = new AddDescriptionResponse(false, ex.Message);
                 return response;
@@ -109,7 +109,7 @@ namespace InstantHabit.Controllers
             try
             {
                 var habit = _habitsService.GetHabitFromDB(id);
-                if(habit == null)
+                if (habit == null)
                 {
                     throw new Exception("Habit does not exist");
                 }
@@ -128,7 +128,7 @@ namespace InstantHabit.Controllers
         {
             try
             {
-                if(request == null)
+                if (request == null)
                 {
                     return new ExtendHabitResponse(false, "Request is null.");
                 }
@@ -137,11 +137,11 @@ namespace InstantHabit.Controllers
             }
             catch (Exception ex)
             {
-                var response = new ExtendHabitResponse(false, ex.Message);  
+                var response = new ExtendHabitResponse(false, ex.Message);
 
                 return response;
             }
-            
+
         }
     }
 }

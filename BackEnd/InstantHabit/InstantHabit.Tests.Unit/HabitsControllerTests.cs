@@ -46,6 +46,7 @@ namespace InstantHabit.Tests.Unit
             Assert.NotNull(addHabitResponse);
             Assert.True(addHabitResponse.Succeeded);
             Assert.Null(addHabitResponse.Error);
+            _habitsServiceMock.Verify(m => m.CreateNewHabit(addHabitRequest), Times.Once());
 
         }
 
@@ -53,12 +54,6 @@ namespace InstantHabit.Tests.Unit
 
         /*
 
-
-            Assert.NotNull(addHabitResponse);
-            Assert.True(addHabitResponse.Succeeded);
-            Assert.Null(addHabitResponse.Error);
-            _habitsServiceMock.Verify(m => m.CreateNewHabit(addHabitRequest), Times.Once());
-        }
 
         [Fact]
         public async Task AddHabit_ReturnsAddHabitResponse_WithSucceededFalse_And_WithErrors_WhenMatchCheckerEqualsNoMatch_And_WhenCreateNewHabitThrowsException()
