@@ -26,6 +26,10 @@ namespace InstantHabit.Controllers
             try
             {
                 var result = _daysService.GetDaysFromDB(habitId);
+                if (result == null)
+                {
+                    throw new Exception("Result is null");
+                }
                 return new GetAllHabitDaysResponse(result, true, null);
             } 
             catch (Exception ex)

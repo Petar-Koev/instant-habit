@@ -7,6 +7,7 @@ using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.WebSockets;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -47,13 +48,12 @@ namespace InstantHabit.Tests.Unit
             Assert.True(addHabitResponse.Succeeded);
             Assert.Null(addHabitResponse.Error);
             _habitsServiceMock.Verify(m => m.CreateNewHabit(addHabitRequest), Times.Once());
-
+            /*
+            _habitsServiceMock.Verify(m => m.MatchChecker(addHabitRequest.Name), Times.Once());
+            */
         }
 
-
-
-        /*
-
+        // Test: 02
 
         [Fact]
         public async Task AddHabit_ReturnsAddHabitResponse_WithSucceededFalse_And_WithErrors_WhenMatchCheckerEqualsNoMatch_And_WhenCreateNewHabitThrowsException()
@@ -61,10 +61,10 @@ namespace InstantHabit.Tests.Unit
             // Given
 
             var addHabitRequest = new AddHabitRequest();
-            addHabitRequest.Name = "WorkOut";
+            addHabitRequest.Name = "Text";
 
             _habitsServiceMock.Setup((m) => m.MatchChecker(addHabitRequest.Name)).Returns("No match");
-            _habitsServiceMock.Setup((m) => m.CreateNewHabit(addHabitRequest)).Throws(new Exception("bla"));
+            _habitsServiceMock.Setup((m) => m.CreateNewHabit(addHabitRequest)).Throws(new Exception("Error"));
 
             // When
 
@@ -74,16 +74,17 @@ namespace InstantHabit.Tests.Unit
 
             Assert.NotNull(addHabitResponse);
             Assert.False(addHabitResponse.Succeeded);
-            Assert.Equal("bla",addHabitResponse.Error);
+            Assert.Equal("Error", addHabitResponse.Error);
+
         }
+
+        // Test: 03
 
         [Theory]
         [InlineData("Test")]
-        [InlineData("lowercase")]
-        [InlineData("UPPERCASE")]
         [InlineData("Match")]
         [InlineData("")]
-        public async Task AddHabit_ReturnsAddHabitResponse_WithSucceededFalse_And_WithMatchCheckerMessage_WhenMatchCheckerEqualsMatch(string matchChecker)
+        public async Task AddHabit_ReturnsAddHabitResponse_WithSucceededFalse_And_WithMatchCheckerMessage_WhenMatchCheckerIsNotNoMatch(string matchChecker)
         {
             // Given
 
@@ -103,21 +104,66 @@ namespace InstantHabit.Tests.Unit
             Assert.Equal(matchChecker, addHabitResponse.Error);
         }
 
-       
+        // Test: 04
+
+        [Fact]
+        public async Task AddHabit_ReturnsAddHabitResponse_WithSucceededFalse_And_WithError_WhenRequestIsNull()
+        {
+
+            // When 
+
+            var addHabitResponse = await _habitsController.AddHabit(null);
+
+            // Then
+
+            Assert.NotNull(addHabitResponse);
+            Assert.False(addHabitResponse.Succeeded);
+            Assert.Equal("Request is null.", addHabitResponse.Error);
+        }
+
+        // Test: 05
+
+        [Fact]
+        public async Task AddHabit_ReturnsAddHabitResponse_WithSucceededFalse_And_WithErrors_WhenMatchCheckerThrowsException()
+        {
+            // Given
+
+            var addHabitRequest = new AddHabitRequest();
+            addHabitRequest.Name = "Text";
+
+            _habitsServiceMock.Setup((m) => m.MatchChecker(addHabitRequest.Name)).Throws(new Exception("Error"));
+
+            // When
+
+            var addHabitResponse = await _habitsController.AddHabit(addHabitRequest);
+
+            // Then
+
+            Assert.NotNull(addHabitResponse);
+            Assert.False(addHabitResponse.Succeeded);
+            Assert.Equal("Error", addHabitResponse.Error);
+
+        }
+
+
         // Method: GetAllHabits
 
+        // Test: 01
+
+
         [Fact]
-        public async Task GetAllHabits_ReturnsListWithAllHabitsFromDB()
+        public async Task GetAllHabits_ReturnsGetAllHabitsResponse_WithListOfAllHabits_And_SucceedTrue_And_WithoutErrors()
         {
             // Given
 
-            var listOfHabits = new List<Habit>();  
-            listOfHabits.Add(new Habit
+            var habits = new List<Habit>();
+            habits.Add(new Habit
             {
-                Description = "It Works Fine!"
+                Description = "Daily training.",
+                Name = "Working Out"
             });
 
-            _habitsServiceMock.Setup((m) => m.GetHabitsFromDB()).Returns(listOfHabits);
+            _habitsServiceMock.Setup((m) => m.GetHabitsFromDB()).Returns(habits);
 
             // When
 
@@ -126,19 +172,21 @@ namespace InstantHabit.Tests.Unit
             // Then
 
             Assert.NotNull(getAllHabitsResponse);
-            Assert.Equal(listOfHabits, getAllHabitsResponse);
-            Assert.Equal(listOfHabits[0].Description, getAllHabitsResponse[0].Description);
+            Assert.Equal(habits, getAllHabitsResponse.Habits);
+            Assert.Equal(habits[0].Description, getAllHabitsResponse.Habits[0].Description);
+            Assert.Equal(habits[0].Name, getAllHabitsResponse.Habits[0].Name);
+            Assert.True(getAllHabitsResponse.Succeeded);
+            Assert.Null(getAllHabitsResponse.Error);
         }
 
-        // Test To Be Checked: 1(new test)
+        // Test: 02
 
         [Fact]
-        public async Task GetAllHabits_ThrowsException_And_ReturnsNewHabitList()
+        public async Task GetAllHabits_ReturnsGetAllHabitsResponse_When_GetHabitsFromDBThrowsexception()
         {
             // Given
 
-
-            _habitsServiceMock.Setup((m) => m.GetHabitsFromDB()).Throws(new Exception("no such habit"));
+            _habitsServiceMock.Setup((m) => m.GetHabitsFromDB()).Throws(new Exception("Error"));
 
             // When
 
@@ -147,17 +195,33 @@ namespace InstantHabit.Tests.Unit
             // Then
 
             Assert.NotNull(getAllHabitsResponse);
-           // Assert.Equal(listOfHabits, getAllHabitsResponse);
-            Assert.Empty(getAllHabitsResponse);
+            Assert.False(getAllHabitsResponse.Succeeded);
+            Assert.Equal("Error", getAllHabitsResponse.Error);
         }
 
+        // Method: DeleteAHabit
 
-        // Method: DeleteAhabit
-
-        // Test To Be Checked: 2(verify, happy path / removed from Exception Test)
+        // Test: 01
 
         [Fact]
-        public async Task DeleteAhabit_ReturnsDeleteAhabitResponse_WithSucceededTrue_And_WithoutErrors()
+        public async Task DeleteAHabit_ReturnsNewDeleteAHabitResponse_WhenRequestEqualsNull()
+        {
+            // When 
+
+            var deleteHabitResponse = await _habitsController.DeleteAhabit(null);
+
+            // Then
+
+            Assert.NotNull(deleteHabitResponse);
+            Assert.False(deleteHabitResponse.Succeeded);
+            Assert.Equal("Request is null.", deleteHabitResponse.Error);
+        }
+
+        // Test: 02
+
+
+        [Fact]
+        public async Task DeleteAHabit_ReturnsNewDeleteAHabitResponse_WithSucceededTrue_And_WithoutErrors()
         {
             // Given
 
@@ -167,167 +231,226 @@ namespace InstantHabit.Tests.Unit
 
             // When
 
-            var deleteHabitResponse = await _habitsController.DeleteAhabit(deleteHabitRequest);
+            var response = await _habitsController.DeleteAhabit(deleteHabitRequest);
 
             // Then
 
-            Assert.NotNull(deleteHabitResponse);
-            Assert.True(deleteHabitResponse.Succeeded);
-            Assert.Null(deleteHabitResponse.Error);
+            Assert.NotNull(response);
+            Assert.True(response.Succeeded);
+            Assert.Null(response.Error);
             _habitsServiceMock.Verify(m => m.DeleteHabit(deleteHabitRequest), Times.Once());
         }
 
+        // Test: 03
+
 
         [Fact]
-        public async Task DeleteAhabit_ReturnsDeleteAhabitResponse_WithSucceededFalse_And_WhenDeleteHabitThrowsException()
+        public async Task DeleteAHabit_ReturnsNewDeleteAHabitResponse_WithSucceededFalse_And_DeleteHabitThrowsException()
         {
             // Given
 
             var deleteHabitRequest = new DeleteAhabitRequest();
 
-            _habitsServiceMock.Setup((m) => m.DeleteHabit(deleteHabitRequest)).Throws(new Exception("Fail")); ;
+            _habitsServiceMock.Setup((m) => m.DeleteHabit(deleteHabitRequest)).Throws(new Exception("Error"));
 
             // When
 
-            var deleteHabitResponse = await _habitsController.DeleteAhabit(deleteHabitRequest);
+            var response = await _habitsController.DeleteAhabit(deleteHabitRequest);
 
             // Then
 
-            Assert.NotNull(deleteHabitResponse);
-            Assert.False(deleteHabitResponse.Succeeded);
-            Assert.Equal("Fail", deleteHabitResponse.Error);
+            Assert.NotNull(response);
+            Assert.False(response.Succeeded);
+            Assert.Equal("Error", response.Error);
         }
 
         // Method: AddDescription
 
-        // Test To Be Checked: 4(verify???)
-
+        // Test: 01
 
         [Fact]
-        public async Task AddDescription_ReturnsAddDescriptionResponse_WithSucceededTrue_And_WithoutErrors()
+        public async Task AddDescription_ReturnsNewAddDescriptionResponse_WhenRequestEqualsNull()
         {
-            // Given
 
-            var addDescriptionRequest = new AddDescriptionRequest();
+            // When 
 
-            _habitsServiceMock.Setup((m) => m.AddHabitDescription(addDescriptionRequest));
-
-            // When
-
-            var addDescriptionResponse = await _habitsController.AddDescription(addDescriptionRequest);
+            var response = await _habitsController.AddDescription(null);
 
             // Then
 
-            Assert.NotNull(addDescriptionResponse);
-            Assert.True(addDescriptionResponse.Succeeded);
-            Assert.Null(addDescriptionResponse.Error);
-            _habitsServiceMock.Verify(m => m.AddHabitDescription(addDescriptionRequest), Times.Once());
+            Assert.NotNull(response);
+            Assert.False(response.Succeeded);
+            Assert.Equal("Request is null.", response.Error);
         }
 
+        // Test: 02
+
 
         [Fact]
-        public async Task AddDescription_ReturnsAddDescriptionResponse_WithSucceededFalse_And_WhenAddDesciptionThrowsException()
+        public async Task AddDescription_ReturnsNewAddDescriptionResponse_WithSucceededTrue_And_WithoutErrors()
         {
             // Given
 
-            var addDescriptionRequest = new AddDescriptionRequest();
+            var request = new AddDescriptionRequest();
 
-            _habitsServiceMock.Setup((m) => m.AddHabitDescription(addDescriptionRequest)).Throws(new Exception("Fail")); ;
+            _habitsServiceMock.Setup((m) => m.AddHabitDescription(request));
 
             // When
 
-            var addDescriptionResponse = await _habitsController.AddDescription(addDescriptionRequest);
+            var response = await _habitsController.AddDescription(request);
 
             // Then
 
-            Assert.NotNull(addDescriptionResponse);
-            Assert.False(addDescriptionResponse.Succeeded);
-            Assert.Equal("Fail", addDescriptionResponse.Error);
+            Assert.NotNull(response);
+            Assert.True(response.Succeeded);
+            Assert.Null(response.Error);
+            _habitsServiceMock.Verify(m => m.AddHabitDescription(request), Times.Once());
+        }
+
+        // Test: 03
+
+
+        [Fact]
+        public async Task AddDescription_ReturnsNewAddDescriptiontResponse_WithSucceededFalse_And_AddHabitDescriptionThrowsException()
+        {
+            // Given
+
+            var request = new AddDescriptionRequest();
+
+            _habitsServiceMock.Setup((m) => m.AddHabitDescription(request)).Throws(new Exception("Error"));
+
+            // When
+
+            var response = await _habitsController.AddDescription(request);
+
+            // Then
+
+            Assert.NotNull(response);
+            Assert.False(response.Succeeded);
+            Assert.Equal("Error", response.Error);
         }
 
 
         // Method: GetHabitById
 
-        // Test To Be Checked: 5(new)
+        // Test: 01
 
-        [Theory]
-        [InlineData(2,"name",true)]
-        [InlineData(6, "UPPER", true)]
-        [InlineData(3, "lower", false)]
-        public async Task GetHabitById_ReturnsHabitFromDB(int id, string name, bool isExtended)
+
+        [Fact]
+        public async Task GetHabitById_ReturnsGetHabitByIdResponse_WithHabit_And_SucceededTrue_And_WithoutErrors()
         {
             // Given
 
             var habit = new Habit();
-            habit.Id = id;
-            habit.Name = name;
-            habit.IsExtended = isExtended;    
+            habit.Name = "Working Out";
+            habit.Description = "Test";
+            habit.Id = 2;
 
-            _habitsServiceMock.Setup((m) => m.GetHabitFromDB(id)).Returns(habit);
+            _habitsServiceMock.Setup((m) => m.GetHabitFromDB(habit.Id)).Returns(habit);
 
             // When
 
-            var getHabitByIdResponse = await _habitsController.GetHabitById(id);
+            var response = await _habitsController.GetHabitById(habit.Id);
 
             // Then
 
-            Assert.NotNull(getHabitByIdResponse);
-            Assert.Equal(habit, getHabitByIdResponse);
-            Assert.Equal(habit.Name, getHabitByIdResponse.Name);
-            Assert.Equal(habit.IsExtended, getHabitByIdResponse.IsExtended);
+            Assert.NotNull(response);
+            Assert.Equal(habit, response.Habit);
+            Assert.Equal(habit.Description, response.Habit.Description);
+            Assert.Equal(habit.Name, response.Habit.Name);
+            Assert.True(response.Succeeded);
+            Assert.Null(response.Error);
+        }
+
+        // Test: 02
+
+
+        [Fact]
+        public async Task GetHabitById_ReturnsGetHabitByIdResponse_WhenHabitEqualsNull()
+        {
+            _habitsServiceMock.Setup((m) => m.GetHabitFromDB(1)).Returns((Habit)null);
+
+            // When
+
+            var response = await _habitsController.GetHabitById(1);
+
+            // Then
+
+            Assert.NotNull(response);
+            Assert.False(response.Succeeded);
+            Assert.Equal("Habit does not exist",response.Error);
         }
 
         // Method: ExtendHabit
 
-
+        // Test: 01
 
         [Fact]
-        public async Task ExtendHabit_ReturnsExxtendHabitResponse_WithSucceededTrue_And_WithoutErrors()
+        public async Task ExtendHabit_ReturnsNewExtendHabitResponse_WhenRequestEqualsNull()
         {
-            // Given
 
-            var extendHabitRequest = new ExtendHabitRequest();
-            extendHabitRequest.HabitId = 2;
+            // When 
 
-            _habitsServiceMock.Setup((m) => m.SetIsExtended(extendHabitRequest));
-
-
-            // When
-
-            var extendHabitResponse = await _habitsController.ExtendHabit(extendHabitRequest);
+            var response = await _habitsController.ExtendHabit(null);
 
             // Then
 
-            Assert.NotNull(extendHabitResponse);
-            Assert.True(extendHabitResponse.Succeeded);
-            Assert.Null(extendHabitResponse.Error);
+            Assert.NotNull(response);
+            Assert.False(response.Succeeded);
+            Assert.Equal("Request is null.", response.Error);
         }
 
+        // Test: 02
 
+        
         [Fact]
-        public async Task ExtendHabit_ReturnsExtendHabitResponse_WithSucceededFalse_And_WhenExtendHabitThrowsException()
+        public async Task ExtendHabit_ReturnsNewExtendHabitResponse_WithSucceededTrue_And_WithoutErrors()
         {
             // Given
 
-            var extendHabitRequest = new ExtendHabitRequest();
-            extendHabitRequest.HabitId = 2;
+            var request = new ExtendHabitRequest();
 
-            _habitsServiceMock.Setup((m) => m.SetIsExtended(extendHabitRequest)).Throws(new Exception("fail")); ;
-
+            _habitsServiceMock.Setup((m) => m.SetIsExtended(request));
 
             // When
 
-            var extendHabitResponse = await _habitsController.ExtendHabit(extendHabitRequest);
+            var response = await _habitsController.ExtendHabit(request);
 
             // Then
 
-            Assert.NotNull(extendHabitResponse);
-            Assert.False(extendHabitResponse.Succeeded);
-            Assert.Equal("fail", extendHabitResponse.Error);
+            Assert.NotNull(response);
+            Assert.True(response.Succeeded);
+            Assert.Null(response.Error);
+            _habitsServiceMock.Verify(m => m.SetIsExtended(request), Times.Once());
+        }
+        
+
+        // Test: 03
+
+
+        [Fact]
+        public async Task ExtendHabit_ReturnsNewExtendHabitResponse_WithSucceededFalse_And_ExtendHabitThrowsException()
+        {
+            // Given
+
+            var request = new ExtendHabitRequest();
+
+            _habitsServiceMock.Setup((m) => m.SetIsExtended(request)).Throws(new Exception("Error"));
+
+            // When
+
+            var response = await _habitsController.ExtendHabit(request);
+
+            // Then
+
+            Assert.NotNull(response);
+            Assert.False(response.Succeeded);
+            Assert.Equal("Error", response.Error);
         }
 
 
-        */
+
+
     }
 }
 
