@@ -2,6 +2,7 @@
 using InstantHabit.Interfaces;
 using InstantHabit.Models;
 using Moq;
+using System.Security.Cryptography;
 
 
 namespace InstantHabit.Tests.Unit
@@ -488,7 +489,7 @@ namespace InstantHabit.Tests.Unit
             Assert.True(response.Succeeded);
             Assert.Null(response.Error);
         }
-        /*
+        
         // ResetChecker
 
         // Test: 01
@@ -512,250 +513,117 @@ namespace InstantHabit.Tests.Unit
             Assert.Equal("Something went wrong", response);
         }
 
+        // Test: 02
 
-
-        /*
-
-        // Method: GetAllHabitDays
-        // add negative test
-
-        [Fact]
-        public async Task GetAllHabitDays_ReturnsListWithAllHabitDaysFromDB()
+        [Theory]
+        [InlineData("You succeeded")]
+        [InlineData("You failed.")]
+        public async Task ResetChecker_ReturnsConfirmation(string confirmation)
         {
             // Given
 
-            var listOfHabitDays = new List<Day>();
-            int habitId = 2;
-            
+            int dayNumber = 25;
+            int habitId = 1;
 
-            _daysServiceMock.Setup((m) => m.GetDaysFromDB(habitId)).Returns(listOfHabitDays);
+            _daysServiceMock.Setup((m) => m.DaysListResetChecker(dayNumber, habitId)).Returns(confirmation);
 
             // When
 
-            var getAllHabitDaysResponse = await _daysController.GetAllHabitDays(habitId);
+            var response = await _daysController.ResetChecker(dayNumber,habitId);
 
             // Then
 
-            Assert.NotNull(getAllHabitDaysResponse);
-            Assert.Equal(listOfHabitDays, getAllHabitDaysResponse);
+            Assert.NotNull(response);
+            Assert.Equal(confirmation, response);
         }
 
-        // AddDay
+        // Test: 03
 
         [Fact]
-        public async Task AddDay_ReturnsAddDayResponse_WithSucceededTrue_And_WithoutErrors_WhenCheckForMatchEqualsNoMatch()
+        public async Task ResetChecker_ReturnsExceptionMessage_WhenDaysListResetCheckerThrowsException()
+        {
+            // Given
+            int dayNumber = 25;
+            int habitId = 1;
+
+            _daysServiceMock.Setup((m) => m.DaysListResetChecker(dayNumber, habitId)).Throws(new Exception("Error"));
+
+            // When
+
+            var response = await _daysController.ResetChecker(dayNumber, habitId);
+
+            // Then
+
+            Assert.NotNull(response);
+            Assert.Equal("Error", response);
+        }
+
+        // Method: DeleteHabitDays
+
+        // Test: 01
+
+        [Fact]
+        public async Task DeleteHabitDays_DeleteHabitDaysResponse_WhenRequestEqualsNull()
+        {
+
+            // When 
+
+            var response = await _daysController.DeleteHabitDays(null);
+
+            // Then
+
+            Assert.NotNull(response);
+            Assert.False(response.Succeeded);
+            Assert.Equal("Request is null", response.Error);
+        }
+
+        // Test: 02
+        
+
+        [Fact]
+        public async Task DeleteHabitDays_DeleteHabitDaysResponse_WithSucceededTrue_And_WithoutErrors()
         {
             // Given
 
-            var addDayRequest = new AddDayRequest();
-            addDayRequest.HabitId = 2;
-            addDayRequest.DayNumber = 2;
+            var request = new DeleteHabitDaysRequest();
 
-            _daysServiceMock.Setup((m) => m.MatchChecker(addDayRequest.HabitId, addDayRequest.DayNumber)).Returns("No match");
-
+            _daysServiceMock.Setup((m) => m.DeleteDays(request));
 
             // When
 
-            var addDayResponse = await _daysController.AddDay(addDayRequest);
+            var response = await _daysController.DeleteHabitDays(request);
 
             // Then
 
-            Assert.NotNull(addDayResponse);
-            Assert.True(addDayResponse.Succeeded);
-            Assert.Null(addDayResponse.Error);
+            Assert.NotNull(response);
+            Assert.True(response.Succeeded);
+            Assert.Null(response.Error);
+            _daysServiceMock.Verify(m => m.DeleteDays(request), Times.Once());
         }
+
+        // Test: 03
 
         
         [Fact]
-        public async Task AddDay_ReturnsAddDayResponse_WithSucceededFalse_And_WithErrors_WhenCheckForMatchEqualsNoMatch_And_WhenAddNewDayThrowsException()
-        {
-            // Given
-            var addDayRequest = new AddDayRequest();
-            addDayRequest.HabitId = 2;
-            addDayRequest.DayNumber = 2;
-
-            _daysServiceMock.Setup((m) => m.MatchChecker(addDayRequest.HabitId, addDayRequest.DayNumber)).Returns("No match");
-            _daysServiceMock.Setup((m) => m.AddNewDay(addDayRequest)).Throws(new Exception("bla"));
-
-            // When
-
-            var addDayResponse = await _daysController.AddDay(addDayRequest);
-
-            // Then
-
-            Assert.NotNull(addDayResponse);
-            Assert.False(addDayResponse.Succeeded);
-            Assert.Equal("bla", addDayResponse.Error);
-        }
-
-        
-        [Fact]
-        public async Task AddDay_ReturnsAddDayResponse_WithSucceededFalse_And_WithhCheckForMatchMessage_WhenMatchCheckerEqualsMatch()
+        public async Task DeleteHabitDays_DeleteHabitDaysResponse_WithSucceededFalse_And_DeleteDaysThrowsException()
         {
             // Given
 
-            var addDayRequest = new AddDayRequest();
-            addDayRequest.HabitId = 2;
-            addDayRequest.DayNumber = 2;
+            var request = new DeleteHabitDaysRequest();
 
-            _daysServiceMock.Setup((m) => m.MatchChecker(addDayRequest.HabitId, addDayRequest.DayNumber)).Returns("Match");
+            _daysServiceMock.Setup((m) => m.DeleteDays(request)).Throws(new Exception("Error"));
 
             // When
 
-            var addDayResponse = await _daysController.AddDay(addDayRequest);
+            var response = await _daysController.DeleteHabitDays(request);
 
             // Then
 
-            Assert.NotNull(addDayResponse);
-            Assert.False(addDayResponse.Succeeded);
-            Assert.Equal("Match", addDayResponse.Error);
+            Assert.NotNull(response);
+            Assert.False(response.Succeeded);
+            Assert.Equal("Error", response.Error);
         }
 
-        
-        [Fact]
-        public async Task AddDay_ReturnsAddDayResponse_WithSucceededFalse_And_WithDefaulErrortMessage_WhenBothConditionsAreFalse()
-        {
-            // Given
-
-            var addDayRequest = new AddDayRequest();
-            addDayRequest.HabitId = 2;
-            addDayRequest.DayNumber = 2;
-
-            _daysServiceMock.Setup((m) => m.MatchChecker(addDayRequest.HabitId, addDayRequest.DayNumber)).Returns("");
-
-            // When
-
-
-            var addDayResponse = await _daysController.AddDay(addDayRequest);
-
-            // Then
-
-            Assert.NotNull(addDayResponse);
-            Assert.False(addDayResponse.Succeeded);
-            Assert.Equal("something went wrong", addDayResponse.Error);
-        }
-
-        // Method: DeleteAhabit
-
-
-        [Fact]
-        public async Task DeleteDay_ReturnsDeleteDayResponse_WithSucceededTrue_And_WithoutErrors()
-        {
-            // Given
-
-            var deleteDayRequest = new DeleteDayRequest();
-            deleteDayRequest.HabitId = 2;
-            deleteDayRequest.DayNumber = 2;
-
-            _daysServiceMock.Setup((m) => m.DeleteSelectedDay(deleteDayRequest));
-
-
-            // When
-
-            var deleteDayResponse = await _daysController.DeleteDay(deleteDayRequest);
-
-            // Then
-
-            Assert.NotNull(deleteDayResponse);
-            Assert.True(deleteDayResponse.Succeeded);
-            Assert.Null(deleteDayResponse.Error);
-        }
-
-
-        [Fact]
-        public async Task DeleteDay_ReturnsDeleteDayResponse_WithSucceededFalse_And_WhenDeleteDayThrowsException()
-        {
-            // Given
-            var deleteDayRequest = new DeleteDayRequest();
-            deleteDayRequest.HabitId = 2;
-            deleteDayRequest.DayNumber = 2;
-
-            _daysServiceMock.Setup((m) => m.DeleteSelectedDay(deleteDayRequest)).Throws(new Exception("fail")); ;
-
-            // When
-
-            var deleteDayResponse = await _daysController.DeleteDay(deleteDayRequest);
-
-            // Then
-
-            Assert.NotNull(deleteDayResponse);
-            Assert.False(deleteDayResponse.Succeeded);
-            Assert.Equal("fail", deleteDayResponse.Error);
-        }
-
-        // Method: AddDayDescription
-
-
-        [Fact]
-        public async Task AddDayDescription_AddDayDescriptionResponse_WithSucceededTrue_And_WithoutErrors()
-        {
-            // Given
-
-            var addDayDescriptionRequest = new AddDayDescriptionRequest();
-            addDayDescriptionRequest.HabitId = 2;
-            addDayDescriptionRequest.DayNumber = 2;
-
-            _daysServiceMock.Setup((m) => m.AddDailyDescription(addDayDescriptionRequest));
-
-
-            // When
-
-            var addDayDescriptionResponse = await _daysController.AddDescription(addDayDescriptionRequest);
-
-            // Then
-
-            Assert.NotNull(addDayDescriptionResponse);
-            Assert.True(addDayDescriptionResponse.Succeeded);
-            Assert.Null(addDayDescriptionResponse.Error);
-        }
-
-
-        [Fact]
-        public async Task AddDayDescription_ReturnsAddDayDescriptionResponse_WithSucceededFalse_And_WhenAddDayDescriptionThrowsException()
-        {
-            // Given
-            var addDayDescriptionRequest = new AddDayDescriptionRequest();
-            addDayDescriptionRequest.HabitId = 2;
-            addDayDescriptionRequest.DayNumber = 2;
-
-            _daysServiceMock.Setup((m) => m.AddDailyDescription(addDayDescriptionRequest)).Throws(new Exception("fail")); ;
-
-            // When
-
-            var addDayDescriptionResponse = await _daysController.AddDescription(addDayDescriptionRequest);
-
-            // Then
-
-            Assert.NotNull(addDayDescriptionResponse);
-            Assert.False(addDayDescriptionResponse.Succeeded);
-            Assert.Equal("fail", addDayDescriptionResponse.Error);
-        }
-
-        // Method: GetDayByNumber
-
-        [Fact]
-        public async Task GetDayByNumber_ReturnsDayFromDB()
-        {
-            // Given
-
-            var day = new Day();
-            day.HabitId = 2;
-            day.DayNumber = 2;
-
-
-            _daysServiceMock.Setup((m) => m.GetDayFromDB(day.HabitId,day.DayNumber)).Returns(day);
-
-            // When
-
-            var getDayByIdResponse = await _daysController.GetDayByNumber(day.HabitId, day.DayNumber);
-
-            // Then
-
-            Assert.NotNull(getDayByIdResponse);
-            Assert.Equal(day, getDayByIdResponse);
-        }
-
-        */
 
     }
 }

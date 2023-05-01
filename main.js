@@ -346,6 +346,9 @@
 
         } else if(result == "You succeeded."){
             await getConfirmation();
+        } else {
+            alert("Something went wrong");
+            return;
         }
     }
 
