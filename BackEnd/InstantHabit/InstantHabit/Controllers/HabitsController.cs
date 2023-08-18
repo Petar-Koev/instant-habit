@@ -29,11 +29,11 @@ namespace InstantHabit.Controllers
                 {
                     return new AddHabitResponse(false, "Request is null.");
                 }
-                var matchChecker = _habitsService.MatchChecker(request.Name);
+                var matchChecker = await _habitsService.MatchChecker(request.Name);
 
                 if (matchChecker == "No match")
                 {
-                    _habitsService.CreateNewHabit(request);
+                    await _habitsService.CreateNewHabit(request);
                     return new AddHabitResponse(true, null);
                 }
                 return new AddHabitResponse(false, matchChecker);
@@ -51,7 +51,7 @@ namespace InstantHabit.Controllers
         {
             try
             {
-                var habits = _habitsService.GetHabitsFromDB();
+                var habits = await _habitsService.GetHabitsFromDB();
                 return new GetAllHabitsResponse(habits, true, null);
             }
             catch (Exception ex)
@@ -71,7 +71,7 @@ namespace InstantHabit.Controllers
                 {
                     return new DeleteAhabitResponse(false, "Request is null.");
                 }
-                _habitsService.DeleteHabit(request);
+                await _habitsService.DeleteHabit(request);
                 return new DeleteAhabitResponse(true, null);
             }
             catch (Exception ex)
@@ -92,7 +92,7 @@ namespace InstantHabit.Controllers
                 {
                     return new AddDescriptionResponse(false, "Request is null.");
                 }
-                _habitsService.AddHabitDescription(request);
+                await _habitsService.AddHabitDescription(request);
                 return new AddDescriptionResponse(true, null);
             }
             catch (Exception ex)
@@ -108,7 +108,7 @@ namespace InstantHabit.Controllers
         {
             try
             {
-                var habit = _habitsService.GetHabitFromDB(id);
+                var habit = await _habitsService.GetHabitFromDB(id);
                 if (habit == null)
                 {
                     throw new Exception("Habit does not exist");
@@ -132,7 +132,7 @@ namespace InstantHabit.Controllers
                 {
                     return new ExtendHabitResponse(false, "Request is null.");
                 }
-                _habitsService.SetIsExtended(request);
+                await _habitsService.SetIsExtended(request);
                 return new ExtendHabitResponse(true, null);
             }
             catch (Exception ex)

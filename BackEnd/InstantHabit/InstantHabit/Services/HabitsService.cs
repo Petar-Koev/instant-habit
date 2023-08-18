@@ -15,40 +15,40 @@ namespace InstantHabit.Services
             _habitsRepository = habitsRepository;
         }
 
-        public void SetIsExtended(ExtendHabitRequest request)
+        public async Task SetIsExtended(ExtendHabitRequest request)
         {
-            _habitsRepository.InsertHabitExtension(request.HabitId);
+           await _habitsRepository.InsertHabitExtension(request.HabitId);
         }
 
-        public void AddHabitDescription(AddDescriptionRequest request)
+        public async Task AddHabitDescription(AddDescriptionRequest request)
         {
-            _habitsRepository.InsertDescription(request.HabitId, request.Description);
+           await _habitsRepository.InsertDescription(request.HabitId, request.Description);
         }
 
-        public void DeleteHabit(DeleteAhabitRequest request)
+        public async Task DeleteHabit(DeleteAhabitRequest request)
         {
-            _habitsRepository.DeleteAhabit(request.Id);
+            await _habitsRepository.DeleteAhabit(request.Id);
         }
 
-        public void CreateNewHabit(AddHabitRequest request)
+        public async Task CreateNewHabit(AddHabitRequest request)
         {
-            _habitsRepository.InsertHabit(request.Name);
+           await _habitsRepository.InsertHabit(request.Name);
         }
 
-        public List<Habit> GetHabitsFromDB()
+        public async Task<List<Habit>> GetHabitsFromDB()
         {
-            return _habitsRepository.GetHabits();
+            return await _habitsRepository.GetHabits();
         }
 
-        public Habit GetHabitFromDB(int habitId)
+        public async Task<Habit> GetHabitFromDB(int habitId)
         {
-            return _habitsRepository.GetHabit(habitId);
+            return await _habitsRepository.GetHabit(habitId);
         }
 
         // Checks for DB habit match
-        public string MatchChecker(string name)
+        public async Task<string> MatchChecker(string name)
         {
-            var habits = _habitsRepository.GetHabits();
+            var habits = await _habitsRepository.GetHabits();
 
             var checker = "";
 

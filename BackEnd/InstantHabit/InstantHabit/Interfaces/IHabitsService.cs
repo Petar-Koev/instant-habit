@@ -4,12 +4,12 @@ namespace InstantHabit.Interfaces
 {
     public interface IHabitsService
     {
-        public Habit GetHabitFromDB(int habitId);
-        public string MatchChecker(string name);
-        public void SetIsExtended(ExtendHabitRequest request);
-        public void AddHabitDescription(AddDescriptionRequest request);
-        public void DeleteHabit(DeleteAhabitRequest request);
-        public List<Habit> GetHabitsFromDB();
-        public void CreateNewHabit(AddHabitRequest request);
+        public Task<Habit> GetHabitFromDB(int habitId);
+        public Task<string> MatchChecker(string name);
+        public Task SetIsExtended(ExtendHabitRequest request);
+        public Task AddHabitDescription(AddDescriptionRequest request);
+        public Task DeleteHabit(DeleteAhabitRequest request);
+        public Task<List<Habit>> GetHabitsFromDB();
+        public Task CreateNewHabit(AddHabitRequest request);
     }
 }
