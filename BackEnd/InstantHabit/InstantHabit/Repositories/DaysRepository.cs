@@ -12,17 +12,17 @@ namespace InstantHabit.Repositories
         {
             _context = context;
         }
-        public List<Day> GetAllDays(int habitId)
+        public async Task<List<Day>> GetAllDays(int habitId)
         {
-            var days = _context.Days.ToList<Day>();
+            var days = await _context.Days.ToListAsync<Day>();
             var result = (from day in days
                           where day.HabitId == habitId
                           select day).ToList();
             return result;
         }
-        public Day GetDay(int habitId, int num)
+        public async Task<Day> GetDay(int habitId, int num)
         {
-            var days = _context.Days.ToList<Day>();
+            var days = await _context.Days.ToListAsync<Day>();
 
             var linqResult = (from day in days
                               where day.HabitId == habitId && day.DayNumber == num
@@ -30,22 +30,22 @@ namespace InstantHabit.Repositories
 
             return linqResult;
         }
-        public void DeleteDays(int id)
+        public async Task DeleteDays(int id)
         {
-            _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.DeleteDays_StoredProcedure {0}", id);
+            await _context.Database.ExecuteSqlRawAsync("EXECUTE InstantHabit.DeleteDays_StoredProcedure {0}", id);
         }
-        public void AddDailyDescription(int id, int num, string description)
+        public async Task AddDailyDescription(int id, int num, string description)
         {
-            _context.Database.ExecuteSqlRaw
+            await _context.Database.ExecuteSqlRawAsync
                 ("EXECUTE InstantHabit.AddDayDescription_StoredProcedure {0}, {1}, {2}", id, num, description);
         }
-        public void DeleteSelectedDay(int id, int num)
+        public async Task DeleteSelectedDay(int id, int num)
         {
-            _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.DeleteDay_StoredProcedure {0}, {1}", id, num);
+            await _context.Database.ExecuteSqlRawAsync("EXECUTE InstantHabit.DeleteDay_StoredProcedure {0}, {1}", id, num);
         }
-        public void AddNewDay(int id, int num)
+        public async Task AddNewDay(int id, int num)
         {
-            _context.Database.ExecuteSqlRaw("EXECUTE InstantHabit.AddNewDay_StoredProcedure {0}, {1}", id, num);
+            await _context.Database.ExecuteSqlRawAsync("EXECUTE InstantHabit.AddNewDay_StoredProcedure {0}, {1}", id, num);
         }
     }
 }

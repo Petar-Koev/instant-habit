@@ -16,21 +16,21 @@ namespace InstantHabit.Services
         }
 
         // Gets days for a specific habit
-        public List<Day> GetDaysFromDB(int habitId)
+        public async Task<List<Day>> GetDaysFromDB(int habitId)
         {
-            return _daysRepository.GetAllDays(habitId);
+            return await _daysRepository.GetAllDays(habitId);
         }
 
         // Gets a specific day
-        public Day GetDayFromDB(int habitId, int num)
+        public async Task<Day> GetDayFromDB(int habitId, int num)
         {
-            return _daysRepository.GetDay(habitId,num);
+            return await _daysRepository.GetDay(habitId,num);
         }
 
         // Checks for grid extensions / days reset.
-        public string DaysListResetChecker(int num, int habitId )
+        public async Task<string> DaysListResetChecker(int num, int habitId )
         {
-            var result = GetDaysFromDB(habitId);
+            var result = await GetDaysFromDB(habitId);
 
             var response = "";
 
@@ -48,9 +48,9 @@ namespace InstantHabit.Services
         }
 
         // Checks for DB day match
-        public string MatchChecker(int id, int dayNumber)
+        public async Task<string> MatchChecker(int id, int dayNumber)
         {
-            var result = GetDaysFromDB(id);
+            var result = await GetDaysFromDB(id);
 
             var checker = "";
 
@@ -76,9 +76,9 @@ namespace InstantHabit.Services
             }
             return checker;
         }
-        public List<int> CalculateBestStreak(int habitId)
+        public async Task<List<int>> CalculateBestStreak(int habitId)
         {
-            var days = GetDaysFromDB(habitId);
+            var days = await GetDaysFromDB(habitId);
             var numbers = new List<int>();
 
             foreach (var day in days) {numbers.Add(day.DayNumber); };
@@ -151,26 +151,26 @@ namespace InstantHabit.Services
             }
             return msg;
         }
-        public void DeleteDays(DeleteHabitDaysRequest request)
+        public async Task DeleteDays(DeleteHabitDaysRequest request)
         {
-            _daysRepository.DeleteDays(request.HabitId);
+            await _daysRepository.DeleteDays(request.HabitId);
         }
-        public void AddDailyDescription(AddDayDescriptionRequest request)
+        public async Task AddDailyDescription(AddDayDescriptionRequest request)
         {
-            _daysRepository.AddDailyDescription(request.HabitId, request.DayNumber, request.Description);
+           await _daysRepository.AddDailyDescription(request.HabitId, request.DayNumber, request.Description);
         }
-        public void DeleteSelectedDay(DeleteDayRequest request)
+        public async Task DeleteSelectedDay(DeleteDayRequest request)
         {
-            _daysRepository.DeleteSelectedDay(request.HabitId, request.DayNumber);
+            await _daysRepository.DeleteSelectedDay(request.HabitId, request.DayNumber);
         }
 
-        public void AddNewDay(AddDayRequest request)
+        public async Task AddNewDay(AddDayRequest request)
         {
-            _daysRepository.AddNewDay(request.HabitId, request.DayNumber);
+            await _daysRepository.AddNewDay(request.HabitId, request.DayNumber);
         }
-        public BestStreakResponse GetStreakMessage(int habitId)
+        public async Task<BestStreakResponse> GetStreakMessage(int habitId)
         {
-            var bestStreakInfo = CalculateBestStreak(habitId);
+            var bestStreakInfo = await CalculateBestStreak(habitId);
             var msg = CalculateMessage(bestStreakInfo.Max());
 
             var result = new BestStreakResponse(bestStreakInfo.Max(), msg, true, null);

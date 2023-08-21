@@ -4,15 +4,15 @@ namespace InstantHabit.Interfaces
 {
     public interface IDaysService
     {
-        public List<Day> GetDaysFromDB(int habitId);
-        public Day GetDayFromDB(int habitId, int num);
-        public string DaysListResetChecker(int num, int habitId);
-        public string MatchChecker(int id, int dayNumber);
-        public List<int> CalculateBestStreak(int habitId);
-        public void DeleteDays(DeleteHabitDaysRequest request);
-        public void AddNewDay(AddDayRequest request);
-        public void DeleteSelectedDay(DeleteDayRequest request);
-        public void AddDailyDescription(AddDayDescriptionRequest request);
-        public BestStreakResponse GetStreakMessage(int habitId);
+        public Task<List<Day>> GetDaysFromDB(int habitId);
+        public Task<Day> GetDayFromDB(int habitId, int num);
+        public Task<string> DaysListResetChecker(int num, int habitId);
+        public Task<string> MatchChecker(int id, int dayNumber);
+        public Task<List<int>> CalculateBestStreak(int habitId);
+        public Task DeleteDays(DeleteHabitDaysRequest request);
+        public Task AddNewDay(AddDayRequest request);
+        public Task DeleteSelectedDay(DeleteDayRequest request);
+        public Task AddDailyDescription(AddDayDescriptionRequest request);
+        public Task<BestStreakResponse> GetStreakMessage(int habitId);
     }
 }

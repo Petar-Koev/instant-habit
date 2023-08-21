@@ -25,7 +25,7 @@ namespace InstantHabit.Controllers
         {
             try
             {
-                var result = _daysService.GetDaysFromDB(habitId);
+                var result = await _daysService.GetDaysFromDB(habitId);
                 if (result == null)
                 {
                     throw new Exception("Result is null");
@@ -49,11 +49,11 @@ namespace InstantHabit.Controllers
                 {
                     return new AddDayResponse(false, "Request is null.");
                 }
-                var checkForMatch = _daysService.MatchChecker(request.HabitId, request.DayNumber);
+                var checkForMatch = await _daysService.MatchChecker(request.HabitId, request.DayNumber);
 
                 if (checkForMatch == "No match")
                 {
-                    _daysService.AddNewDay(request);
+                    await _daysService.AddNewDay(request);
                     return new AddDayResponse(true, null);
                 }
                 return new AddDayResponse(false, checkForMatch);
@@ -76,7 +76,7 @@ namespace InstantHabit.Controllers
                 {
                     return new DeleteDayResponse(false, "Request is null.");
                 }
-                _daysService.DeleteSelectedDay(request);
+                await _daysService.DeleteSelectedDay(request);
                 return new DeleteDayResponse(true, null);
             }
             catch (Exception ex)
@@ -97,7 +97,7 @@ namespace InstantHabit.Controllers
                 {
                     return new AddDayDescriptionResponse(false, "Request is null.");
                 }
-                _daysService.AddDailyDescription(request);
+                await _daysService.AddDailyDescription(request);
                 return new AddDayDescriptionResponse(true, null);
             }
             catch (Exception ex)
@@ -113,7 +113,7 @@ namespace InstantHabit.Controllers
         {
             try
             {
-                var day = _daysService.GetDayFromDB(habitId, dayNumber);
+                var day = await _daysService.GetDayFromDB(habitId, dayNumber);
                 if (day == null)
                 {
                     throw new Exception("Day does not exist");
@@ -132,7 +132,7 @@ namespace InstantHabit.Controllers
         {
             try
             {
-                var result = _daysService.GetStreakMessage(habitId);
+                var result = await _daysService.GetStreakMessage(habitId);
                 if (result == null)
                 {
                     throw new Exception("Result is null");
@@ -151,7 +151,7 @@ namespace InstantHabit.Controllers
         {
             try
             {
-                var confirmation = _daysService.DaysListResetChecker(dayNumber, habitId);
+                var confirmation = await _daysService.DaysListResetChecker(dayNumber, habitId);
                 if(confirmation == null)
                 {
                     throw new Exception("Something went wrong");
@@ -175,7 +175,7 @@ namespace InstantHabit.Controllers
                 {
                     return new DeleteHabitDaysResponse(false, "Request is null");
                 }
-                _daysService.DeleteDays(request);
+                await _daysService.DeleteDays(request);
                 return new DeleteHabitDaysResponse(true, null);
             }
             catch (Exception ex)

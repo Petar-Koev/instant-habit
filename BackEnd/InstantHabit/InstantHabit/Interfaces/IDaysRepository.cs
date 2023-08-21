@@ -4,12 +4,12 @@ namespace InstantHabit.Interfaces
 {
     public interface IDaysRepository
     {
-        public void AddNewDay(int id, int num);
-        public void DeleteSelectedDay(int id, int num);
-        public void AddDailyDescription(int id, int num, string description);
-        public void DeleteDays(int id);
-        public Day GetDay(int habitId, int num);
-        public List<Day> GetAllDays(int habitId);
+        public Task AddNewDay(int id, int num);
+        public Task DeleteSelectedDay(int id, int num);
+        public Task AddDailyDescription(int id, int num, string description);
+        public Task DeleteDays(int id);
+        public Task<Day> GetDay(int habitId, int num);
+        public Task<List<Day>> GetAllDays(int habitId);
 
     }
 }
